@@ -64,6 +64,7 @@ td.n,th.n{text-align:right}.empty{padding:24px;text-align:center;color:var(--mut
 .tp{border:1px solid var(--line);border-radius:6px;padding:8px;margin-bottom:8px;display:grid;gap:6px}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 18px;border-radius:6px;z-index:99}#toast.e{background:var(--bad)}
 .rep{color:#000;background:#fff;font-size:14px;line-height:1.5;position:fixed;left:-10000px;top:0}.rep table{width:100%;border-collapse:collapse}.rep th,.rep td{border:1px solid #333;padding:4px 6px;font-size:13px;background:#fff;color:#000}.rep h2,.rep h3{text-align:center}.rep .l h3{text-align:left}
+.swal2-popup{font-family:Sarabun,sans-serif;border-radius:12px}.swal2-styled.swal2-confirm{background:var(--navy)!important}.swal2-styled:focus{box-shadow:0 0 0 3px rgba(176,138,62,.45)!important}.swal2-timer-progress-bar{background:var(--brass)}
 @media(max-width:760px){.hero .wrap,.g2{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -108,12 +109,13 @@ td.n,th.n{text-align:right}.empty{padding:24px;text-align:center;color:var(--mut
 <div id="modal" hidden><div class="box" id="box"></div></div>
 <div id="toast" hidden></div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-const SB_URL='https://ngphafjtptdmakzmxcgw.supabase.co';   // Project URL
-const SB_KEY='sb_publishable_O53vYGQrygl3mAIfpt2PgQ_jl-m__hu';           // publishable / anon key เท่านั้น (ห้ามใส่ service_role)
+const SB_URL='https://ngphafjtptdmakzmxcgw.supabase.co   // Project URL
+const SB_KEY='sb_publishable_O53vYGQrygl3mAIfpt2PgQ_jl-m__hu           // publishable / anon key เท่านั้น (ห้ามใส่ service_role)
 const IDLE=30*60*1000;
 const TH=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 const THS=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
@@ -130,7 +132,9 @@ const subL=s=>({id:s.id,label:s.name+' (อ.'+nm(S.districts,s.districtId)+')'})
 const distL=d=>({id:d.id,label:d.name+' (จ.'+nm(S.provinces,d.provinceId)+')'});
 let last=Date.now(),busy=0;
 const load=on=>{busy+=on?1:-1;$('#top').style.display=busy>0?'block':'none'};
-function toast(t,e){const x=$('#toast');x.textContent=t;x.className=e?'e':'';x.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>x.hidden=true,3500)}
+const Toast=Swal.mixin({toast:true,position:'top-end',showConfirmButton:false,timer:3000,timerProgressBar:true,didOpen:t=>{t.addEventListener('mouseenter',Swal.stopTimer);t.addEventListener('mouseleave',Swal.resumeTimer)}});
+function toast(t,e){Toast.fire({icon:e?'error':'success',title:t})}
+const ask=(title,text)=>Swal.fire({title,text,icon:'warning',showCancelButton:true,confirmButtonText:'ยืนยันลบ',cancelButtonText:'ยกเลิก',confirmButtonColor:'#b3392f',reverseButtons:true,focusCancel:true}).then(r=>r.isConfirmed);
 const safe=f=>async function(...a){try{return await f.apply(this,a)}catch(e){if(e&&e.message)toast(e.message,1)}};
 
 const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{storage:window.sessionStorage,persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
@@ -193,7 +197,7 @@ async function api(action,data){
 }
 /* ---------- Auth / idle ---------- */
 async function doLogin(ev){ev.preventDefault();const f=ev.target;$('#lerr').textContent='';
-  try{await api('login',{username:f.u.value,password:f.p.value});f.reset();await boot()}catch(e){$('#lerr').textContent=e.message}}
+  try{await api('login',{username:f.u.value,password:f.p.value});f.reset();await boot();toast('ยินดีต้อนรับ '+S.user.name)}catch(e){$('#lerr').textContent=e.message}}
 async function boot(){
   const r=await api('me');S.user=r.user;S.provinces=r.provinces;S.districts=r.districts;S.subdistricts=r.subdistricts;S.types=r.types;S.my=null;last=Date.now();
   $('#landing').hidden=true;$('#app').hidden=false;$('#who').textContent=S.user.name+' ('+ROLE[S.user.role]+')';
@@ -206,9 +210,15 @@ function doLogout(auto,msg){
   S.user=null;S.meetings=[];S.users=[];S.members=[];S.my=null;closeM();
   $('#app').hidden=true;$('#landing').hidden=false;$('#view').innerHTML='';
   $('#lerr').textContent=auto?(msg||'ออกจากระบบอัตโนมัติ เนื่องจากไม่มีการใช้งานเกิน 30 นาที'):'';scrollTo(0,0);
+  if(auto)Swal.fire({icon:'info',title:'ออกจากระบบอัตโนมัติ',text:msg||'ไม่มีการใช้งานเกิน 30 นาที กรุณาเข้าสู่ระบบใหม่',confirmButtonText:'ตกลง'});
 }
-['click','keydown','mousemove','touchstart','scroll'].forEach(e=>addEventListener(e,()=>{if(S.user)last=Date.now()},{passive:true}));
-setInterval(()=>{if(S.user&&Date.now()-last>IDLE)doLogout(1)},15000);
+let warned=false;
+['click','keydown','mousemove','touchstart','scroll'].forEach(e=>addEventListener(e,()=>{if(S.user){last=Date.now();if(warned){warned=false;Swal.close()}}},{passive:true}));
+setInterval(()=>{
+  if(!S.user)return;const idle=Date.now()-last;
+  if(idle>IDLE){warned=false;doLogout(1)}
+  else if(idle>IDLE-60000&&!warned){warned=true;Swal.fire({icon:'warning',title:'ไม่มีการใช้งานนาน',html:'ระบบจะออกจากระบบใน <b></b> วินาที',timer:Math.max(IDLE-idle,1000),timerProgressBar:true,allowOutsideClick:false,confirmButtonText:'ใช้งานต่อ',didOpen:()=>{const b=Swal.getHtmlContainer().querySelector('b');const t=setInterval(()=>{b.textContent=Math.ceil(Swal.getTimerLeft()/1000)},250);Swal.getPopup()._t=t},willClose:()=>clearInterval(Swal.getPopup()._t)}).then(r=>{if(r.isConfirmed){last=Date.now()}warned=false})}
+},5000);
 document.addEventListener('visibilitychange',()=>{if(S.user&&Date.now()-last>IDLE)doLogout(1)});
 sb.auth.getSession().then(r=>{if(r.data.session)boot().catch(()=>{})});
 
@@ -254,7 +264,7 @@ function viewMeet(){
   <div class="card tw">${L.length?`<table><tr><th>วันที่</th><th>ประเภท / เรื่อง</th><th>พื้นที่</th><th class="n">องค์ประชุม</th><th class="n">เข้า</th><th class="n">ไม่เข้า</th><th></th></tr>${L.map(m=>`<tr><td>${thDate(m.date)}</td><td>${esc(nm(S.types,m.typeId))}<br><small>${esc(m.title)}</small></td><td>${esc(nm(S.subdistricts,m.subdistrictId))}<br><small>อ.${esc(nm(S.districts,m.districtId))}</small></td><td class="n">${m.total}</td><td class="n">${m.present}</td><td class="n">${m.absent}</td>
   <td style="white-space:nowrap"><button class="btn sec sm" onclick="mPDF('${m.id}')">PDF</button> <button class="btn sec sm" onclick="openMeeting('${m.id}')">${canEd(m)?'แก้ไข':'ดู'}</button> ${canEd(m)?`<button class="btn bad sm" onclick="delMeet('${m.id}')">ลบ</button>`:''}</td></tr>`).join('')}</table>`:'<div class="empty">ยังไม่มีการประชุม'+(ed?' กด "เพิ่มการประชุม" เพื่อเริ่มบันทึก':'')+'</div>'}</div>`;
 }
-const delMeet=safe(async id=>{if(!confirm('ลบการประชุมนี้?'))return;await api('delMeeting',{id});S.my=null;toast('ลบแล้ว');await redraw()});
+const delMeet=safe(async id=>{if(!await ask('ลบการประชุมนี้?'))return;await api('delMeeting',{id});S.my=null;toast('ลบแล้ว');await redraw()});
 
 /* ---------- Modal ---------- */
 const openM=h=>{$('#box').innerHTML=h;$('#modal').hidden=false};
@@ -311,7 +321,7 @@ async function viewMem(){
 function openMember(id){const x=S.members.find(m=>m.id===id)||{name:'',position:''};
   openM(`${mh(id?'แก้ไของค์ประชุม':'เพิ่มองค์ประชุม')}<div class="g2"><label>ชื่อ-สกุล<input id="m_n" value="${esc(x.name)}"></label><label>ตำแหน่ง<input id="m_p" value="${esc(x.position)}"></label></div><p><button class="btn" onclick="saveMem('${id||''}')">บันทึก</button></p>`)}
 const saveMem=safe(async id=>{await api('saveMember',{id,subdistrictId:M.sub,name:$('#m_n').value,position:$('#m_p').value});closeM();toast('บันทึกแล้ว');await redraw()});
-const delMem=safe(async id=>{if(!confirm('ลบรายชื่อนี้? (การประชุมที่บันทึกไว้แล้วไม่ได้รับผลกระทบ)'))return;await api('delMember',{id});await redraw()});
+const delMem=safe(async id=>{if(!await ask('ลบรายชื่อนี้? (การประชุมที่บันทึกไว้แล้วไม่ได้รับผลกระทบ)'))return;await api('delMember',{id});await redraw()});
 function openBulk(){openM(`${mh('เพิ่มหลายรายชื่อ')}<label>พิมพ์/วาง 1 บรรทัดต่อ 1 คน รูปแบบ: ชื่อ-สกุล, ตำแหน่ง<textarea id="b_t" style="min-height:220px" placeholder="นายสมชาย ใจดี, นายก อบต.&#10;นางสมหญิง รักดี, ประธานสภา"></textarea></label><p><button class="btn" onclick="saveBulk()">บันทึกทั้งหมด</button></p>`)}
 const saveBulk=safe(async()=>{const list=$('#b_t').value.split('\n').map(l=>{const [n,...p]=l.split(',');return{name:n.trim(),position:p.join(',').trim()}}).filter(x=>x.name);
   const n=await api('saveMembers',{subdistrictId:M.sub,list});closeM();toast('เพิ่ม '+n+' รายชื่อ');await redraw()});
@@ -331,7 +341,7 @@ function openUser(id){const u=S.users.find(x=>x.id===id)||{username:'',name:'',r
   <label class="chk"><input type="checkbox" id="u_a" ${u.active==='Y'?'checked':''}> เปิดใช้งานบัญชี</label></div><p><button class="btn" onclick="saveUser('${id||''}')">บันทึก</button></p>`);uRole()}
 function uRole(){const r=$('#u_r').value;$('#u_pl').hidden=r!=='province';$('#u_dl').hidden=r!=='district';$('#u_sl').hidden=r!=='subdistrict'}
 const saveUser=safe(async id=>{await api('saveUser',{id,username:$('#u_un').value,name:$('#u_nm').value,role:$('#u_r').value,password:$('#u_pw').value,provinceId:$('#u_p').value,districtId:$('#u_d').value,subdistrictId:$('#u_s').value,active:$('#u_a').checked});closeM();toast('บันทึกแล้ว');await redraw()});
-const delUser=safe(async id=>{if(!confirm('ลบผู้ใช้นี้?'))return;await api('delUser',{id});await redraw()});
+const delUser=safe(async id=>{if(!await ask('ลบผู้ใช้นี้?'))return;await api('delUser',{id});await redraw()});
 
 /* ---------- Master data (central) ---------- */
 const K={province:{t:'จังหวัด',a:'provinces'},district:{t:'อำเภอ',a:'districts',p:'provinceId',pa:'provinces',pt:'จังหวัด'},subdistrict:{t:'ตำบล',a:'subdistricts',p:'districtId',pa:'districts',pt:'อำเภอ'},type:{t:'ประเภทการประชุม',a:'types'}};
@@ -346,7 +356,7 @@ function openKind(id){const k=K[MK.tab],r=S[k.a].find(x=>x.id===id)||{name:''};
   openM(`${mh((id?'แก้ไข':'เพิ่ม')+k.t)}<div class="g2"><label>ชื่อ<input id="k_n" value="${esc(r.name)}"></label>${k.p?`<label>${k.pt}<select id="k_p">${opts(S[k.pa].map(x=>k.pa==='districts'?distL(x):x),r[k.p],'เลือก...')}</select></label>`:''}</div><p><button class="btn" onclick="saveKind('${id||''}')">บันทึก</button></p>`)}
 const reloadMe=async()=>{const r=await api('me');S.provinces=r.provinces;S.districts=r.districts;S.subdistricts=r.subdistricts;S.types=r.types};
 const saveKind=safe(async id=>{const k=K[MK.tab];await api('saveGeo',{kind:MK.tab,id,name:$('#k_n').value,parentId:k.p?$('#k_p').value:''});closeM();await reloadMe();toast('บันทึกแล้ว');viewMaster()});
-const delKind=safe(async id=>{if(!confirm('ลบรายการนี้?'))return;await api('delGeo',{kind:MK.tab,id});await reloadMe();viewMaster()});
+const delKind=safe(async id=>{if(!await ask('ลบรายการนี้?'))return;await api('delGeo',{kind:MK.tab,id});await reloadMe();viewMaster()});
 
 /* ---------- Password ---------- */
 function openPw(){openM(`${mh('เปลี่ยนรหัสผ่าน')}<div class="g2"><label>รหัสผ่านเดิม<input id="w_o" type="password" autocomplete="current-password"></label><label>รหัสผ่านใหม่ (อย่างน้อย 8 ตัว)<input id="w_n" type="password" autocomplete="new-password"></label></div><p><button class="btn" onclick="savePw()">บันทึก</button></p>`)}
@@ -355,17 +365,17 @@ const savePw=safe(async()=>{await api('changePassword',{old:$('#w_o').value,pw:$
 /* ---------- Reports ---------- */
 const area=m=>`ต.${nm(S.subdistricts,m.subdistrictId)} อ.${nm(S.districts,m.districtId)} จ.${nm(S.provinces,m.provinceId)}`;
 async function makePDF(html,fn,land){
-  await document.fonts.ready;const d=document.createElement('div');d.className='rep';d.style.width=(land?1050:730)+'px';d.innerHTML=html;document.body.appendChild(d);
-  try{await html2pdf().set({margin:10,filename:fn,image:{type:'jpeg',quality:.95},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:land?'landscape':'portrait'},pagebreak:{mode:['css','legacy'],avoid:['tr']}}).from(d).save()}finally{d.remove()}
+  Swal.fire({title:'กำลังสร้างรายงาน',text:'กรุณารอสักครู่',allowOutsideClick:false,showConfirmButton:false,didOpen:()=>Swal.showLoading()});await document.fonts.ready;const d=document.createElement('div');d.className='rep';d.style.width=(land?1050:730)+'px';d.innerHTML=html;document.body.appendChild(d);
+  let okp=0;try{await html2pdf().set({margin:10,filename:fn,image:{type:'jpeg',quality:.95},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:land?'landscape':'portrait'},pagebreak:{mode:['css','legacy'],avoid:['tr']}}).from(d).save();okp=1}finally{d.remove();Swal.close()}if(okp)toast('สร้างรายงานแล้ว');
 }
-const mPDF=safe(async id=>{const m=S.meetings.find(x=>x.id===id);toast('กำลังสร้าง PDF...');
+const mPDF=safe(async id=>{const m=S.meetings.find(x=>x.id===id);
   await makePDF(`<h2>รายงานสรุปผลการประชุม</h2><h3 style="font-weight:400">${esc(nm(S.types,m.typeId))}${m.title?' : '+esc(m.title):''}</h3>
   <table style="margin:10px 0"><tr><td width="22%"><b>วันที่ประชุม</b></td><td>${thDate(m.date)}</td></tr><tr><td><b>พื้นที่</b></td><td>${esc(area(m))}</td></tr>
   <tr><td><b>องค์ประชุมทั้งหมด</b></td><td>${m.total} คน</td></tr><tr><td><b>เข้าร่วมประชุม</b></td><td>${m.present} คน (ร้อยละ ${pct(m.present,m.total)})</td></tr><tr><td><b>ไม่เข้าร่วมประชุม</b></td><td>${m.absent} คน</td></tr></table>
   <div class="l"><h3>หัวข้อการประชุม</h3></div>${m.topics.length?m.topics.map((t,i)=>`<div style="margin:6px 0"><b>${i+1}. ${esc(t.title)}</b><div style="white-space:pre-wrap;padding-left:18px">${esc(t.detail)}</div></div>`).join(''):'<p>-</p>'}
   <div class="l"><h3 style="margin-top:10px">รายชื่อองค์ประชุม</h3></div><table><tr><th width="8%">ลำดับ</th><th>ชื่อ-สกุล</th><th>ตำแหน่ง</th><th width="18%">การเข้าร่วม</th></tr>${m.attendance.map((a,i)=>`<tr><td align="center">${i+1}</td><td>${esc(a.name)}</td><td>${esc(a.position)}</td><td align="center">${a.present?'เข้าร่วม':'ไม่เข้าร่วม'}</td></tr>`).join('')}</table>
   <div style="margin-top:36px;text-align:right;padding-right:40px">ลงชื่อ ....................................... ผู้บันทึกการประชุม<br>( ....................................... )</div>`,'สรุปการประชุม_'+m.date+'.pdf')});
-const expP=safe(async()=>{const L=fm(),T=tot(L);if(!L.length)return toast('ไม่มีข้อมูลให้ออกรายงาน',1);toast('กำลังสร้าง PDF...');
+const expP=safe(async()=>{const L=fm(),T=tot(L);if(!L.length)return toast('ไม่มีข้อมูลให้ออกรายงาน',1);
   await makePDF(`<h2>รายงานสรุปการประชุม ปี ${F.year+543}</h2><p style="text-align:center;margin:0">${F.month?'เดือน'+TH[+F.month-1]+' ':''}${F.sub?'ต.'+esc(nm(S.subdistricts,F.sub))+' ':''}${F.dist?'อ.'+esc(nm(S.districts,F.dist))+' ':''}${F.prov?'จ.'+esc(nm(S.provinces,F.prov)):''}</p>
   <p>ประชุมทั้งหมด ${T.n} ครั้ง | องค์ประชุมรวม ${T.t} | เข้าร่วม ${T.p} | ไม่เข้าร่วม ${T.t-T.p} | ร้อยละการเข้าร่วม ${pct(T.p,T.t)}</p>
   <table><tr><th>วันที่</th><th>ประเภท</th><th>เรื่อง</th><th>พื้นที่</th><th>องค์ประชุม</th><th>เข้าร่วม</th><th>ไม่เข้า</th><th>ร้อยละ</th></tr>${L.map(m=>`<tr><td>${thDate(m.date)}</td><td>${esc(nm(S.types,m.typeId))}</td><td>${esc(m.title)}</td><td>${esc(area(m))}</td><td align="center">${m.total}</td><td align="center">${m.present}</td><td align="center">${m.absent}</td><td align="center">${pct(m.present,m.total)}</td></tr>`).join('')}</table>`,'รายงานสรุปการประชุม_'+(F.year+543)+'.pdf',1)});
