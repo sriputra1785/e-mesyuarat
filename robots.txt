@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://sriputra1785.github.io/e-mesyuarat/sitemap.xml
+https://sriputra1785.github.io/e-mesyuarat/sitemap.xml
