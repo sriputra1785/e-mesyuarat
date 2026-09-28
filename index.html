@@ -6,106 +6,577 @@
 <title>ระบบบันทึกการประชุมออนไลน์ | สรุปผลการประชุม แดชบอร์ดสถิติการเข้าประชุม</title>
 <meta name="description" content="ระบบบันทึกการประชุมออนไลน์ระดับตำบล อำเภอ จังหวัด ติ๊กรายชื่อองค์ประชุม ออกรายงานสรุปเป็น PDF และ Excel พร้อมแดชบอร์ดสถิติการเข้าประชุมรายเดือน">
 <meta name="robots" content="index,follow">
-<!-- หลังสมัคร Google Search Console ให้นำ meta google-site-verification มาวางตรงนี้ -->
-<link rel="canonical" href="sriputra1785/e-mesyuarat">
+<link rel="canonical" href="https://sriputra1785.github.io/e-mesyuarat/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="ระบบบันทึกการประชุมออนไลน์">
 <meta property="og:description" content="บันทึกการประชุม ติ๊กรายชื่อองค์ประชุม ออกรายงาน PDF/Excel และดูสถิติการเข้าประชุมรายเดือน">
 <meta property="og:locale" content="th_TH">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"ระบบบันทึกการประชุมออนไลน์","applicationCategory":"BusinessApplication","operatingSystem":"Web","inLanguage":"th","description":"ระบบบันทึกการประชุมระดับตำบล อำเภอ จังหวัด พร้อมรายงาน PDF/Excel และแดชบอร์ด"}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--navy:#1b3a5c;--navy2:#132b46;--brass:#b08a3e;--paper:#f5f6f8;--ink:#1c2733;--mut:#647385;--line:#d8dee6;--ok:#2f7d5b;--bad:#b3392f}
-*{box-sizing:border-box}body{margin:0;font:16px/1.6 Sarabun,sans-serif;color:var(--ink);background:var(--paper)}
-[hidden]{display:none!important}
-h1,h2,h3,h4{margin:0;line-height:1.3}button,input,select,textarea{font:inherit;color:inherit}
-input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff}
-textarea{min-height:70px;resize:vertical}label{display:block;font-size:14px;color:var(--mut)}label>*{margin-top:3px}
-:focus-visible{outline:3px solid var(--brass);outline-offset:1px}
-.btn{background:var(--navy);color:#fff;border:0;border-radius:6px;padding:8px 16px;cursor:pointer;font-weight:500}
-.btn:hover{background:var(--navy2)}.btn.sec{background:#fff;color:var(--navy);border:1px solid var(--navy)}.btn.bad{background:var(--bad)}.btn.sm{padding:3px 10px;font-size:14px}
-#top{position:fixed;top:0;left:0;right:0;height:3px;background:var(--brass);display:none;z-index:99}
-/* landing */
-.hero{background:var(--navy);color:#fff;padding:56px 20px 64px}
-.wrap{max-width:1100px;margin:0 auto}
-.hero .wrap{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:center}
-.hero h1{font-size:clamp(28px,4.5vw,46px);font-weight:700}.hero p{color:#c9d6e4;max-width:32em}
-.seal{border-left:4px solid var(--brass);padding-left:14px;margin-top:22px;color:#e6dcc4;font-size:15px}
-.lg{background:#fff;color:var(--ink);border-radius:10px;padding:26px;display:grid;gap:14px}
-.lg h2{font-size:20px}.err{color:var(--bad);font-size:14px;min-height:20px}
-.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:0;margin:40px auto;border-top:2px solid var(--navy)}
-.feat div{padding:18px 20px 18px 0;border-bottom:1px solid var(--line)}.feat h3{font-size:18px;color:var(--navy)}.feat p{margin:4px 0 0;color:var(--mut)}
-footer{text-align:center;color:var(--mut);font-size:14px;padding:20px}
-/* app */
-header.app{background:var(--navy);color:#fff;position:sticky;top:0;z-index:20}
-header.app .wrap{display:flex;align-items:center;gap:14px;padding:8px 16px;flex-wrap:wrap}
-header b{font-size:18px}header .u{margin-left:auto;font-size:14px;color:#c9d6e4}
-nav{display:flex;gap:2px;flex-wrap:wrap}nav button{background:none;border:0;color:#c9d6e4;padding:6px 12px;cursor:pointer;border-bottom:3px solid transparent}
-nav button.on{color:#fff;border-color:var(--brass)}
-main{max-width:1100px;margin:0 auto;padding:18px 16px 60px}
-.card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:16px}
-.head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
-.fl{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0;margin-bottom:16px;border:1px solid var(--line);background:#fff;border-radius:8px}
-.kpi div{padding:14px 16px;border-right:1px solid var(--line)}.kpi div:last-child{border:0}.kpi b{display:block;font-size:28px;color:var(--navy);line-height:1.2}.kpi span{color:var(--mut);font-size:14px}
-.tw{overflow-x:auto}table{width:100%;border-collapse:collapse}th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;font-size:15px;vertical-align:top}th{background:#eef1f5;color:var(--navy);white-space:nowrap}
-td.n,th.n{text-align:right}.empty{padding:24px;text-align:center;color:var(--mut)}
-.bars{display:flex;gap:6px;height:220px}.bar{flex:1;display:flex;flex-direction:column;text-align:center;font-size:12px;min-width:0}
-.bar .col{flex:1;display:flex;align-items:flex-end}.bar i{display:block;width:100%;background:var(--navy);border-radius:3px 3px 0 0;min-height:2px}.bar i.z{background:var(--line)}
-.bar small{color:var(--mut)}
-.tag{display:inline-block;padding:0 8px;border-radius:10px;font-size:13px}.tag.ok{background:#e0f1e8;color:var(--ok)}.tag.no{background:#f7e2df;color:var(--bad)}
-#modal{position:fixed;inset:0;background:rgba(19,43,70,.55);display:flex;justify-content:center;align-items:flex-start;overflow:auto;padding:20px;z-index:50}
-#modal .box{background:#fff;border-radius:10px;width:100%;max-width:820px;padding:20px}
-.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.mh button{background:none;border:0;font-size:22px;cursor:pointer}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.att{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:4px;margin:8px 0;max-height:320px;overflow:auto;border:1px solid var(--line);border-radius:6px;padding:6px}
-.chk{display:flex;gap:8px;align-items:center;padding:4px 6px;border-radius:4px;color:var(--ink);font-size:15px;cursor:pointer;margin:0}.chk:hover{background:#eef1f5}.chk input{width:auto;margin:0}.chk small{color:var(--mut)}
-.tp{border:1px solid var(--line);border-radius:6px;padding:8px;margin-bottom:8px;display:grid;gap:6px}
-#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 18px;border-radius:6px;z-index:99}#toast.e{background:var(--bad)}
-.rep{color:#000;background:#fff;font-size:14px;line-height:1.5;position:fixed;left:-10000px;top:0}.rep table{width:100%;border-collapse:collapse}.rep th,.rep td{border:1px solid #333;padding:4px 6px;font-size:13px;background:#fff;color:#000}.rep h2,.rep h3{text-align:center}.rep .l h3{text-align:left}
-.swal2-popup{font-family:Sarabun,sans-serif;border-radius:12px}.swal2-styled.swal2-confirm{background:var(--navy)!important}.swal2-styled:focus{box-shadow:0 0 0 3px rgba(176,138,62,.45)!important}.swal2-timer-progress-bar{background:var(--brass)}
-@media(max-width:760px){.hero .wrap,.g2{grid-template-columns:1fr}}
-@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+:root {
+  --navy: #1a365d;
+  --navy2: #12263f;
+  --navy3: #2a4a73;
+  --brass: #c9a227;
+  --brass-soft: #f5edd6;
+  --paper: #f0f2f5;
+  --ink: #1a202c;
+  --mut: #64748b;
+  --line: #e2e8f0;
+  --ok: #276749;
+  --ok-bg: #e6f4ea;
+  --bad: #c53030;
+  --bad-bg: #fde8e8;
+  --white: #ffffff;
+  --shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
+  --shadow-lg: 0 4px 20px rgba(0,0,0,.08);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font: 16px/1.6 Sarabun, system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+}
+[hidden] { display: none !important; }
+h1, h2, h3, h4 { margin: 0; line-height: 1.3; font-weight: 700; }
+button, input, select, textarea { font: inherit; color: inherit; }
+input, select, textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  transition: border-color .15s, box-shadow .15s;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--navy3);
+  box-shadow: 0 0 0 3px rgba(26,54,93,.12);
+}
+textarea { min-height: 80px; resize: vertical; }
+label { display: block; font-size: 13px; font-weight: 500; color: var(--mut); }
+label > * { margin-top: 4px; }
+:focus-visible { outline: 3px solid var(--brass); outline-offset: 2px; }
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--navy);
+  color: #fff;
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 10px 18px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  transition: background .15s, transform .1s;
+}
+.btn:hover { background: var(--navy2); }
+.btn:active { transform: scale(.98); }
+.btn.sec {
+  background: var(--white);
+  color: var(--navy);
+  border: 1.5px solid var(--line);
+}
+.btn.sec:hover { background: #f8fafc; border-color: var(--navy3); }
+.btn.bad { background: var(--bad); }
+.btn.bad:hover { background: #9b2c2c; }
+.btn.sm { padding: 5px 12px; font-size: 13px; font-weight: 500; }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+
+/* Loading bar */
+#top {
+  position: fixed; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--brass), #e8c84a);
+  display: none; z-index: 100;
+}
+
+/* ===== Landing ===== */
+.hero {
+  background: linear-gradient(145deg, var(--navy) 0%, var(--navy2) 100%);
+  color: #fff;
+  padding: 64px 20px 72px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -40%; right: -10%;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(201,162,39,.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.wrap { max-width: 1100px; margin: 0 auto; position: relative; }
+.hero .wrap {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+.hero h1 {
+  font-size: clamp(28px, 4.5vw, 42px);
+  font-weight: 700;
+  letter-spacing: -.02em;
+  margin-bottom: 16px;
+}
+.hero p { color: #a8bdd4; max-width: 34em; font-size: 16px; margin: 0 0 20px; }
+.seal {
+  display: inline-block;
+  border-left: 3px solid var(--brass);
+  padding: 8px 0 8px 16px;
+  color: #d4c9a8;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Login card */
+.lg {
+  background: var(--white);
+  color: var(--ink);
+  border-radius: 16px;
+  padding: 28px 28px 24px;
+  display: grid;
+  gap: 16px;
+  box-shadow: var(--shadow-lg);
+}
+.lg h2 { font-size: 20px; color: var(--navy); }
+.err {
+  color: var(--bad);
+  font-size: 13px;
+  min-height: 18px;
+  font-weight: 500;
+}
+.lg .btn { width: 100%; padding: 12px; font-size: 16px; margin-top: 4px; }
+
+/* Features */
+.feat {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0;
+  margin: 0 auto;
+  padding: 8px 0 16px;
+}
+.feat div {
+  padding: 24px 20px 24px 0;
+  border-bottom: 1px solid var(--line);
+}
+.feat h3 {
+  font-size: 16px;
+  color: var(--navy);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.feat h3::before {
+  content: '';
+  width: 6px; height: 6px;
+  background: var(--brass);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.feat p { margin: 0; color: var(--mut); font-size: 14px; line-height: 1.55; }
+footer {
+  text-align: center;
+  color: var(--mut);
+  font-size: 13px;
+  padding: 28px 16px 32px;
+}
+
+/* ===== App ===== */
+header.app {
+  background: var(--navy);
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  box-shadow: 0 1px 8px rgba(0,0,0,.15);
+}
+header.app .wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  flex-wrap: wrap;
+}
+header b { font-size: 17px; font-weight: 700; letter-spacing: -.01em; }
+header .u {
+  margin-left: auto;
+  font-size: 13px;
+  color: #a8bdd4;
+  white-space: nowrap;
+}
+nav { display: flex; gap: 2px; flex-wrap: wrap; }
+nav button {
+  background: none;
+  border: 0;
+  color: #a8bdd4;
+  padding: 7px 14px;
+  cursor: pointer;
+  border-bottom: 2.5px solid transparent;
+  font-weight: 500;
+  font-size: 14px;
+  border-radius: 6px 6px 0 0;
+  transition: color .15s, border-color .15s;
+}
+nav button:hover { color: #fff; }
+nav button.on { color: #fff; border-color: var(--brass); }
+header .btn.sec {
+  background: transparent;
+  color: #c9d6e4;
+  border-color: rgba(255,255,255,.2);
+  padding: 5px 12px;
+  font-size: 13px;
+}
+header .btn.sec:hover { background: rgba(255,255,255,.08); color: #fff; }
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px 72px;
+}
+
+/* Cards & layout */
+.card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.head h2 { font-size: 22px; color: var(--navy); }
+.fl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+/* KPI */
+.kpi {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0;
+  margin-bottom: 16px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.kpi div {
+  padding: 18px 20px;
+  border-right: 1px solid var(--line);
+}
+.kpi div:last-child { border-right: 0; }
+.kpi b {
+  display: block;
+  font-size: 28px;
+  color: var(--navy);
+  line-height: 1.2;
+  font-weight: 700;
+}
+.kpi span { color: var(--mut); font-size: 13px; font-weight: 500; }
+
+/* Tables */
+.tw { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { width: 100%; border-collapse: collapse; }
+th, td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  font-size: 14px;
+  vertical-align: top;
+}
+th {
+  background: #f1f5f9;
+  color: var(--navy);
+  font-weight: 600;
+  white-space: nowrap;
+  font-size: 13px;
+}
+tr:hover td { background: #f8fafc; }
+td.n, th.n { text-align: right; }
+.empty {
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--mut);
+  font-size: 15px;
+}
+
+/* Bars chart */
+.bars { display: flex; gap: 6px; height: 220px; }
+.bar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  font-size: 12px;
+  min-width: 0;
+}
+.bar .col { flex: 1; display: flex; align-items: flex-end; }
+.bar i {
+  display: block;
+  width: 100%;
+  background: linear-gradient(180deg, var(--navy3), var(--navy));
+  border-radius: 4px 4px 0 0;
+  min-height: 2px;
+  transition: height .3s ease;
+}
+.bar i.z { background: var(--line); }
+.bar b { font-size: 12px; color: var(--navy); margin-bottom: 4px; }
+.bar small { color: var(--mut); }
+
+/* Tags */
+.tag {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.tag.ok { background: var(--ok-bg); color: var(--ok); }
+.tag.no { background: var(--bad-bg); color: var(--bad); }
+
+/* Modal */
+#modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 38, 63, .55);
+  backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: auto;
+  padding: 24px 16px;
+  z-index: 50;
+}
+#modal .box {
+  background: var(--white);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 820px;
+  padding: 24px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.18);
+  animation: modalIn .2s ease;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.mh {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.mh h3 { font-size: 18px; color: var(--navy); }
+.mh button {
+  background: none;
+  border: 0;
+  font-size: 22px;
+  cursor: pointer;
+  color: var(--mut);
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s;
+}
+.mh button:hover { background: #f1f5f9; color: var(--ink); }
+.g2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Attendance */
+.att {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 4px;
+  margin: 10px 0;
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  background: #fafbfc;
+}
+.chk {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 6px;
+  color: var(--ink);
+  font-size: 14px;
+  cursor: pointer;
+  margin: 0;
+  transition: background .1s;
+}
+.chk:hover { background: #eef2f7; }
+.chk input { width: auto; margin: 0; accent-color: var(--navy); }
+.chk small { color: var(--mut); }
+
+/* Topics */
+.tp {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin-bottom: 10px;
+  display: grid;
+  gap: 8px;
+  background: #fafbfc;
+}
+
+/* Toast (legacy, mainly using Swal) */
+#toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  z-index: 99;
+  font-size: 14px;
+}
+#toast.e { background: var(--bad); }
+
+/* PDF report (hidden) */
+.rep {
+  color: #000;
+  background: #fff;
+  font-size: 14px;
+  line-height: 1.5;
+  position: fixed;
+  left: -10000px;
+  top: 0;
+}
+.rep table { width: 100%; border-collapse: collapse; }
+.rep th, .rep td {
+  border: 1px solid #333;
+  padding: 4px 6px;
+  font-size: 13px;
+  background: #fff;
+  color: #000;
+}
+.rep h2, .rep h3 { text-align: center; }
+.rep .l h3 { text-align: left; }
+
+/* SweetAlert2 overrides */
+.swal2-popup { font-family: Sarabun, sans-serif !important; border-radius: 14px !important; }
+.swal2-styled.swal2-confirm { background: var(--navy) !important; border-radius: 8px !important; }
+.swal2-styled:focus { box-shadow: 0 0 0 3px rgba(201,162,39,.4) !important; }
+.swal2-timer-progress-bar { background: var(--brass) !important; }
+
+/* Responsive */
+@media (max-width: 760px) {
+  .hero .wrap, .g2 { grid-template-columns: 1fr; }
+  .hero { padding: 40px 16px 48px; }
+  .kpi div { border-right: 0; border-bottom: 1px solid var(--line); }
+  .kpi div:last-child { border-bottom: 0; }
+  header.app .wrap { gap: 8px; }
+  header .u { margin-left: 0; width: 100%; order: 10; font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
 </style>
 </head>
 <body>
 <div id="top"></div>
 
+<!-- Landing -->
 <section id="landing">
-  <div class="hero"><div class="wrap">
-    <div>
-      <h1>บันทึกการประชุม ติ๊กชื่อผู้เข้าร่วม แล้วออกรายงานได้ทันที</h1>
-      <p>ระบบบันทึกการประชุมสำหรับตำบล อำเภอ และจังหวัด เก็บข้อมูลรวมศูนย์ ดูสถิติการเข้าประชุมรายเดือนได้แบบเรียลไทม์</p>
-      <div class="seal">แต่ละพื้นที่บันทึกได้เฉพาะเขตรับผิดชอบของตน ส่วนกลางเห็นภาพรวมทั้งหมด</div>
+  <div class="hero">
+    <div class="wrap">
+      <div>
+        <h1>บันทึกการประชุม<br>ติ๊กชื่อผู้เข้าร่วม แล้วออกรายงานได้ทันที</h1>
+        <p>ระบบบันทึกการประชุมสำหรับตำบล อำเภอ และจังหวัด เก็บข้อมูลรวมศูนย์ ดูสถิติการเข้าประชุมรายเดือนได้แบบเรียลไทม์</p>
+        <div class="seal">แต่ละพื้นที่บันทึกได้เฉพาะเขตรับผิดชอบของตน<br>ส่วนกลางเห็นภาพรวมทั้งหมด</div>
+      </div>
+      <form class="lg" onsubmit="doLogin(event)">
+        <h2>เข้าสู่ระบบ</h2>
+        <label>อีเมล
+          <input name="u" type="email" autocomplete="username" required placeholder="you@example.com">
+        </label>
+        <label>รหัสผ่าน
+          <input name="p" type="password" autocomplete="current-password" required placeholder="••••••••">
+        </label>
+        <div class="err" id="lerr" role="alert"></div>
+        <button class="btn" type="submit">เข้าสู่ระบบ</button>
+      </form>
     </div>
-    <form class="lg" onsubmit="doLogin(event)">
-      <h2>เข้าสู่ระบบ</h2>
-      <label>อีเมล<input name="u" type="email" autocomplete="username" required></label>
-      <label>รหัสผ่าน<input name="p" type="password" autocomplete="current-password" required></label>
-      <div class="err" id="lerr" role="alert"></div>
-      <button class="btn">เข้าสู่ระบบ</button>
-    </form>
-  </div></div>
-  <div class="wrap"><div class="feat">
-    <div><h3>ติ๊กรายชื่อองค์ประชุม</h3><p>นับองค์ประชุมทั้งหมด ผู้เข้าร่วม และผู้ไม่เข้าร่วมให้อัตโนมัติ</p></div>
-    <div><h3>หัวข้อและรายละเอียด</h3><p>บันทึกวาระ มติ และรายละเอียดสำคัญของแต่ละการประชุม</p></div>
-    <div><h3>รายงาน PDF และ Excel</h3><p>ออกรายงานสรุปผลการประชุมได้ทุกระดับ ในคลิกเดียว</p></div>
-    <div><h3>แดชบอร์ดผู้บริหาร</h3><p>สถิติการเข้าประชุมรายเดือน แยกตามตำบล อำเภอ จังหวัด และประเภทการประชุม</p></div>
-    <div><h3>สิทธิ์ตามระดับพื้นที่</h3><p>ตำบล อำเภอ จังหวัด และส่วนกลาง เห็นและแก้ไขข้อมูลตามเขตของตน</p></div>
-    <div><h3>ปลอดภัย</h3><p>ออกจากระบบอัตโนมัติเมื่อไม่ได้ใช้งานเกิน 30 นาที</p></div>
-  </div></div>
+  </div>
+  <div class="wrap">
+    <div class="feat">
+      <div>
+        <h3>ติ๊กรายชื่อองค์ประชุม</h3>
+        <p>นับองค์ประชุมทั้งหมด ผู้เข้าร่วม และผู้ไม่เข้าร่วมให้อัตโนมัติ</p>
+      </div>
+      <div>
+        <h3>หัวข้อและรายละเอียด</h3>
+        <p>บันทึกวาระ มติ และรายละเอียดสำคัญของแต่ละการประชุม</p>
+      </div>
+      <div>
+        <h3>รายงาน PDF และ Excel</h3>
+        <p>ออกรายงานสรุปผลการประชุมได้ทุกระดับ ในคลิกเดียว</p>
+      </div>
+      <div>
+        <h3>แดชบอร์ดผู้บริหาร</h3>
+        <p>สถิติการเข้าประชุมรายเดือน แยกตามตำบล อำเภอ จังหวัด และประเภทการประชุม</p>
+      </div>
+      <div>
+        <h3>สิทธิ์ตามระดับพื้นที่</h3>
+        <p>ตำบล อำเภอ จังหวัด และส่วนกลาง เห็นและแก้ไขข้อมูลตามเขตของตน</p>
+      </div>
+      <div>
+        <h3>ปลอดภัย</h3>
+        <p>ออกจากระบบอัตโนมัติเมื่อไม่ได้ใช้งานเกิน 30 นาที</p>
+      </div>
+    </div>
+  </div>
   <footer>ระบบบันทึกการประชุมออนไลน์</footer>
 </section>
 
+<!-- App shell -->
 <div id="app" hidden>
-  <header class="app"><div class="wrap">
-    <b>บันทึกการประชุม</b><nav id="nav"></nav>
-    <span class="u" id="who"></span><button class="btn sec sm" style="background:none;color:#fff;border-color:#8ea3bb" onclick="openPw()">รหัสผ่าน</button>
-    <button class="btn sec sm" style="background:none;color:#fff;border-color:#8ea3bb" onclick="doLogout()">ออกจากระบบ</button>
-  </div></header>
+  <header class="app">
+    <div class="wrap">
+      <b>บันทึกการประชุม</b>
+      <nav id="nav"></nav>
+      <span class="u" id="who"></span>
+      <button class="btn sec sm" onclick="openPw()">รหัสผ่าน</button>
+      <button class="btn sec sm" onclick="doLogout()">ออกจากระบบ</button>
+    </div>
+  </header>
   <main id="view"></main>
 </div>
+
 <div id="modal" hidden><div class="box" id="box"></div></div>
 <div id="toast" hidden></div>
 
@@ -114,278 +585,966 @@ td.n,th.n{text-align:right}.empty{padding:24px;text-align:center;color:var(--mut
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-const SB_URL='https://ngphafjtptdmakzmxcgw.supabase.co'   // Project URL
-const SB_KEY='sb_publishable_O53vYGQrygl3mAIfpt2PgQ_jl-m__hu'          // publishable / anon key เท่านั้น (ห้ามใส่ service_role)
-const IDLE=30*60*1000;
-const TH=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-const THS=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-const ROLE={central:'ส่วนกลาง',province:'จังหวัด',district:'อำเภอ',subdistrict:'ตำบล'};
-const S={user:null,provinces:[],districts:[],subdistricts:[],types:[],meetings:[],my:null,view:'dash',users:[],members:[]};
-const F={year:new Date().getFullYear(),prov:'',dist:'',sub:'',type:'',month:''};
-const $=s=>document.querySelector(s);
-const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const nm=(a,id)=>(a.find(x=>x.id===id)||{}).name||'-';
-const thDate=d=>{if(!d)return'-';const [y,m,dd]=d.split('-').map(Number);return dd+' '+TH[m-1]+' '+(y+543)};
-const pct=(p,t)=>t?Math.round(p*1000/t)/10:0;
-const opts=(a,sel,ph)=>(ph!=null?`<option value="">${ph}</option>`:'')+a.map(x=>`<option value="${x.id}"${x.id===sel?' selected':''}>${esc(x.label||x.name)}</option>`).join('');
-const subL=s=>({id:s.id,label:s.name+' (อ.'+nm(S.districts,s.districtId)+')'});
-const distL=d=>({id:d.id,label:d.name+' (จ.'+nm(S.provinces,d.provinceId)+')'});
-let last=Date.now(),busy=0;
-const load=on=>{busy+=on?1:-1;$('#top').style.display=busy>0?'block':'none'};
-const Toast=Swal.mixin({toast:true,position:'top-end',showConfirmButton:false,timer:3000,timerProgressBar:true,didOpen:t=>{t.addEventListener('mouseenter',Swal.stopTimer);t.addEventListener('mouseleave',Swal.resumeTimer)}});
-function toast(t,e){Toast.fire({icon:e?'error':'success',title:t})}
-const ask=(title,text)=>Swal.fire({title,text,icon:'warning',showCancelButton:true,confirmButtonText:'ยืนยันลบ',cancelButtonText:'ยกเลิก',confirmButtonColor:'#b3392f',reverseButtons:true,focusCancel:true}).then(r=>r.isConfirmed);
-const safe=f=>async function(...a){try{return await f.apply(this,a)}catch(e){if(e&&e.message)toast(e.message,1)}};
+/* ========== Config ========== */
+const SB_URL = 'https://ngphafjtptdmakzmxcgw.supabase.co';
+const SB_KEY = 'sb_publishable_O53vYGQrygl3mAIfpt2PgQ_jl-m__hu';
+const IDLE = 30 * 60 * 1000;
 
-const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{storage:window.sessionStorage,persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
-const un=r=>{if(r.error){const m=r.error.message||'';throw new Error(/row-level security|permission denied/i.test(m)?'ไม่มีสิทธิ์ดำเนินการ':/duplicate key/i.test(m)?'ข้อมูลซ้ำ':/foreign key/i.test(m)?'ยังมีข้อมูลที่เกี่ยวข้องอยู่ จึงลบไม่ได้':/invalid login/i.test(m)?'อีเมลหรือรหัสผ่านไม่ถูกต้อง':m)}return r.data};
-const sbT={province:'provinces',district:'districts',subdistrict:'subdistricts',type:'meeting_types'};
-const nl=v=>v||null;
-const mapM=r=>({id:r.id,date:r.meeting_date,typeId:r.type_id,provinceId:r.province_id,districtId:r.district_id,subdistrictId:r.subdistrict_id,title:r.title||'',total:r.total,present:r.present,absent:r.absent,attendance:r.attendance||[],topics:r.topics||[]});
-const mapU=r=>({id:r.id,username:r.email||'',name:r.full_name||'',role:r.role||'',provinceId:r.province_id||'',districtId:r.district_id||'',subdistrictId:r.subdistrict_id||'',active:r.active?'Y':'N'});
-const H={
-  async login(d){un(await sb.auth.signInWithPassword({email:String(d.username||'').trim(),password:String(d.password||'')}));return 1},
-  async me(){
-    const s=(await sb.auth.getSession()).data.session;if(!s)throw new Error('กรุณาเข้าสู่ระบบ');
-    const p=un(await sb.from('profiles').select('*').eq('id',s.user.id).maybeSingle());
-    if(!p||!p.active||!p.role){await sb.auth.signOut();throw new Error('บัญชียังไม่ได้รับสิทธิ์ใช้งาน กรุณาติดต่อผู้ดูแลส่วนกลาง')}
-    const [pv,ds,sd,ty]=await Promise.all(['provinces','districts','subdistricts','meeting_types'].map(t=>sb.from(t).select('*').order('name')));
-    return{user:{id:p.id,username:p.email,name:p.full_name||p.email,role:p.role,provinceId:p.province_id||'',districtId:p.district_id||'',subdistrictId:p.subdistrict_id||''},
-      provinces:un(pv),districts:un(ds).map(x=>({id:x.id,name:x.name,provinceId:x.province_id})),subdistricts:un(sd).map(x=>({id:x.id,name:x.name,districtId:x.district_id})),types:un(ty)};
-  },
-  async changePassword(d){
-    if(String(d.pw||'').length<8)throw new Error('รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร');
-    const s=(await sb.auth.getSession()).data.session;
-    un(await sb.auth.signInWithPassword({email:s.user.email,password:String(d.old||'')}));
-    un(await sb.auth.updateUser({password:d.pw}));return 1},
-  async saveGeo(d){
-    const n=String(d.name||'').trim();if(!n)throw new Error('กรอกชื่อ');const row={name:n};
-    if(d.kind==='district'){if(!d.parentId)throw new Error('เลือกจังหวัด');row.province_id=d.parentId}
-    if(d.kind==='subdistrict'){if(!d.parentId)throw new Error('เลือกอำเภอ');row.district_id=d.parentId}
-    const t=sbT[d.kind];un(await(d.id?sb.from(t).update(row).eq('id',d.id):sb.from(t).insert(row)));return 1},
-  async delGeo(d){un(await sb.from(sbT[d.kind]).delete().eq('id',d.id));return 1},
-  async listUsers(){return un(await sb.from('profiles').select('*').order('email')).map(mapU)},
-  async saveUser(d){
-    if(!d.role)throw new Error('เลือกระดับ');const r=d.role;
-    un(await sb.from('profiles').update({full_name:String(d.name||'').trim(),role:r,province_id:r==='province'?nl(d.provinceId):null,district_id:r==='district'?nl(d.districtId):null,subdistrict_id:r==='subdistrict'?nl(d.subdistrictId):null,active:!!d.active}).eq('id',d.id));return 1},
-  async delUser(){throw new Error('ลบบัญชีที่ Supabase > Authentication > Users (หรือปิดการใช้งานที่หน้านี้)')},
-  async listMembers(d){return un(await sb.from('members').select('id,subdistrict_id,name,position').eq('subdistrict_id',d.subdistrictId).order('name')).map(x=>({id:x.id,subdistrictId:x.subdistrict_id,name:x.name,position:x.position||''}))},
-  async saveMember(d){
-    const n=String(d.name||'').trim();if(!n)throw new Error('กรอกชื่อ');const row={subdistrict_id:d.subdistrictId,name:n,position:String(d.position||'').trim()};
-    un(await(d.id?sb.from('members').update(row).eq('id',d.id):sb.from('members').insert(row)));return 1},
-  async saveMembers(d){
-    const have=new Set((await H.listMembers(d)).map(x=>x.name)),rows=[];
-    (d.list||[]).slice(0,300).forEach(x=>{const n=String(x.name||'').trim();if(n&&!have.has(n)){have.add(n);rows.push({subdistrict_id:d.subdistrictId,name:n,position:String(x.position||'').trim()})}});
-    if(rows.length)un(await sb.from('members').insert(rows));return rows.length},
-  async delMember(d){un(await sb.from('members').delete().eq('id',d.id));return 1},
-  async listMeetings(d){
-    let out=[],from=0;
-    for(;;){const r=un(await sb.from('meetings').select('*').gte('meeting_date',d.year+'-01-01').lte('meeting_date',d.year+'-12-31').order('meeting_date',{ascending:false}).order('id').range(from,from+999));out=out.concat(r);if(r.length<1000)break;from+=1000}
-    return out.map(mapM)},
-  async saveMeeting(d){
-    const row={meeting_date:d.date,type_id:d.typeId,subdistrict_id:d.subdistrictId,title:String(d.title||'').slice(0,300),attendance:(d.attendance||[]).map(a=>({id:a.id,name:a.name,position:a.position,present:!!a.present})),topics:(d.topics||[]).map(t=>({title:String(t.title||'').slice(0,300),detail:String(t.detail||'').slice(0,5000)}))};
-    if(!row.attendance.length)throw new Error('ไม่มีรายชื่อองค์ประชุม');
-    un(await(d.id?sb.from('meetings').update(row).eq('id',d.id):sb.from('meetings').insert(row)));return 1},
-  async delMeeting(d){un(await sb.from('meetings').delete().eq('id',d.id));return 1}
+const TH  = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const THS = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const ROLE = { central: 'ส่วนกลาง', province: 'จังหวัด', district: 'อำเภอ', subdistrict: 'ตำบล' };
+
+/* ========== State ========== */
+const S = {
+  user: null, provinces: [], districts: [], subdistricts: [], types: [],
+  meetings: [], my: null, view: 'dash', users: [], members: []
 };
-async function api(action,data){
-  if(S.user&&Date.now()-last>IDLE){doLogout(1);throw new Error('')}
+const F = { year: new Date().getFullYear(), prov: '', dist: '', sub: '', type: '', month: '' };
+
+/* ========== Helpers ========== */
+const $ = s => document.querySelector(s);
+const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const nm = (a, id) => (a.find(x => x.id === id) || {}).name || '-';
+const thDate = d => {
+  if (!d) return '-';
+  const [y, m, dd] = d.split('-').map(Number);
+  return dd + ' ' + TH[m - 1] + ' ' + (y + 543);
+};
+const pct = (p, t) => t ? Math.round(p * 1000 / t) / 10 : 0;
+const opts = (a, sel, ph) =>
+  (ph != null ? `<option value="">${ph}</option>` : '') +
+  a.map(x => `<option value="${x.id}"${x.id === sel ? ' selected' : ''}>${esc(x.label || x.name)}</option>`).join('');
+const subL  = s => ({ id: s.id, label: s.name + ' (อ.' + nm(S.districts, s.districtId) + ')' });
+const distL = d => ({ id: d.id, label: d.name + ' (จ.' + nm(S.provinces, d.provinceId) + ')' });
+
+let last = Date.now(), busy = 0;
+const load = on => { busy += on ? 1 : -1; $('#top').style.display = busy > 0 ? 'block' : 'none'; };
+
+const Toast = Swal.mixin({
+  toast: true, position: 'top-end', showConfirmButton: false, timer: 3000,
+  timerProgressBar: true,
+  didOpen: t => {
+    t.addEventListener('mouseenter', Swal.stopTimer);
+    t.addEventListener('mouseleave', Swal.resumeTimer);
+  }
+});
+function toast(t, e) { Toast.fire({ icon: e ? 'error' : 'success', title: t }); }
+const ask = (title, text) => Swal.fire({
+  title, text, icon: 'warning', showCancelButton: true,
+  confirmButtonText: 'ยืนยันลบ', cancelButtonText: 'ยกเลิก',
+  confirmButtonColor: '#c53030', reverseButtons: true, focusCancel: true
+}).then(r => r.isConfirmed);
+const safe = f => async function (...a) {
+  try { return await f.apply(this, a); }
+  catch (e) { if (e && e.message) toast(e.message, 1); }
+};
+
+/* ========== Supabase ========== */
+const sb = supabase.createClient(SB_URL, SB_KEY, {
+  auth: { storage: window.sessionStorage, persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+});
+const un = r => {
+  if (r.error) {
+    const m = r.error.message || '';
+    throw new Error(
+      /row-level security|permission denied/i.test(m) ? 'ไม่มีสิทธิ์ดำเนินการ' :
+      /duplicate key/i.test(m) ? 'ข้อมูลซ้ำ' :
+      /foreign key/i.test(m) ? 'ยังมีข้อมูลที่เกี่ยวข้องอยู่ จึงลบไม่ได้' :
+      /invalid login/i.test(m) ? 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' : m
+    );
+  }
+  return r.data;
+};
+const sbT = { province: 'provinces', district: 'districts', subdistrict: 'subdistricts', type: 'meeting_types' };
+const nl = v => v || null;
+const mapM = r => ({
+  id: r.id, date: r.meeting_date, typeId: r.type_id,
+  provinceId: r.province_id, districtId: r.district_id, subdistrictId: r.subdistrict_id,
+  title: r.title || '', total: r.total, present: r.present, absent: r.absent,
+  attendance: r.attendance || [], topics: r.topics || []
+});
+const mapU = r => ({
+  id: r.id, username: r.email || '', name: r.full_name || '', role: r.role || '',
+  provinceId: r.province_id || '', districtId: r.district_id || '',
+  subdistrictId: r.subdistrict_id || '', active: r.active ? 'Y' : 'N'
+});
+
+/* ========== API handlers ========== */
+const H = {
+  async login(d) {
+    un(await sb.auth.signInWithPassword({
+      email: String(d.username || '').trim(),
+      password: String(d.password || '')
+    }));
+    return 1;
+  },
+  async me() {
+    const s = (await sb.auth.getSession()).data.session;
+    if (!s) throw new Error('กรุณาเข้าสู่ระบบ');
+    const p = un(await sb.from('profiles').select('*').eq('id', s.user.id).maybeSingle());
+    if (!p || !p.active || !p.role) {
+      await sb.auth.signOut();
+      throw new Error('บัญชียังไม่ได้รับสิทธิ์ใช้งาน กรุณาติดต่อผู้ดูแลส่วนกลาง');
+    }
+    const [pv, ds, sd, ty] = await Promise.all(
+      ['provinces', 'districts', 'subdistricts', 'meeting_types'].map(t =>
+        sb.from(t).select('*').order('name')
+      )
+    );
+    return {
+      user: {
+        id: p.id, username: p.email, name: p.full_name || p.email, role: p.role,
+        provinceId: p.province_id || '', districtId: p.district_id || '', subdistrictId: p.subdistrict_id || ''
+      },
+      provinces: un(pv),
+      districts: un(ds).map(x => ({ id: x.id, name: x.name, provinceId: x.province_id })),
+      subdistricts: un(sd).map(x => ({ id: x.id, name: x.name, districtId: x.district_id })),
+      types: un(ty)
+    };
+  },
+  async changePassword(d) {
+    if (String(d.pw || '').length < 8) throw new Error('รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร');
+    const s = (await sb.auth.getSession()).data.session;
+    un(await sb.auth.signInWithPassword({ email: s.user.email, password: String(d.old || '') }));
+    un(await sb.auth.updateUser({ password: d.pw }));
+    return 1;
+  },
+  async saveGeo(d) {
+    const n = String(d.name || '').trim();
+    if (!n) throw new Error('กรอกชื่อ');
+    const row = { name: n };
+    if (d.kind === 'district') {
+      if (!d.parentId) throw new Error('เลือกจังหวัด');
+      row.province_id = d.parentId;
+    }
+    if (d.kind === 'subdistrict') {
+      if (!d.parentId) throw new Error('เลือกอำเภอ');
+      row.district_id = d.parentId;
+    }
+    const t = sbT[d.kind];
+    un(await (d.id ? sb.from(t).update(row).eq('id', d.id) : sb.from(t).insert(row)));
+    return 1;
+  },
+  async delGeo(d) {
+    un(await sb.from(sbT[d.kind]).delete().eq('id', d.id));
+    return 1;
+  },
+  async listUsers() {
+    return un(await sb.from('profiles').select('*').order('email')).map(mapU);
+  },
+  async saveUser(d) {
+    if (!d.role) throw new Error('เลือกระดับ');
+    const r = d.role;
+    un(await sb.from('profiles').update({
+      full_name: String(d.name || '').trim(),
+      role: r,
+      province_id: r === 'province' ? nl(d.provinceId) : null,
+      district_id: r === 'district' ? nl(d.districtId) : null,
+      subdistrict_id: r === 'subdistrict' ? nl(d.subdistrictId) : null,
+      active: !!d.active
+    }).eq('id', d.id));
+    return 1;
+  },
+  async delUser() {
+    throw new Error('ลบบัญชีที่ Supabase > Authentication > Users (หรือปิดการใช้งานที่หน้านี้)');
+  },
+  async listMembers(d) {
+    return un(await sb.from('members')
+      .select('id,subdistrict_id,name,position')
+      .eq('subdistrict_id', d.subdistrictId)
+      .order('name')
+    ).map(x => ({ id: x.id, subdistrictId: x.subdistrict_id, name: x.name, position: x.position || '' }));
+  },
+  async saveMember(d) {
+    const n = String(d.name || '').trim();
+    if (!n) throw new Error('กรอกชื่อ');
+    const row = { subdistrict_id: d.subdistrictId, name: n, position: String(d.position || '').trim() };
+    un(await (d.id ? sb.from('members').update(row).eq('id', d.id) : sb.from('members').insert(row)));
+    return 1;
+  },
+  async saveMembers(d) {
+    const have = new Set((await H.listMembers(d)).map(x => x.name));
+    const rows = [];
+    (d.list || []).slice(0, 300).forEach(x => {
+      const n = String(x.name || '').trim();
+      if (n && !have.has(n)) {
+        have.add(n);
+        rows.push({ subdistrict_id: d.subdistrictId, name: n, position: String(x.position || '').trim() });
+      }
+    });
+    if (rows.length) un(await sb.from('members').insert(rows));
+    return rows.length;
+  },
+  async delMember(d) {
+    un(await sb.from('members').delete().eq('id', d.id));
+    return 1;
+  },
+  async listMeetings(d) {
+    let out = [], from = 0;
+    for (;;) {
+      const r = un(await sb.from('meetings').select('*')
+        .gte('meeting_date', d.year + '-01-01')
+        .lte('meeting_date', d.year + '-12-31')
+        .order('meeting_date', { ascending: false })
+        .order('id')
+        .range(from, from + 999));
+      out = out.concat(r);
+      if (r.length < 1000) break;
+      from += 1000;
+    }
+    return out.map(mapM);
+  },
+  async saveMeeting(d) {
+    const row = {
+      meeting_date: d.date,
+      type_id: d.typeId,
+      subdistrict_id: d.subdistrictId,
+      title: String(d.title || '').slice(0, 300),
+      attendance: (d.attendance || []).map(a => ({
+        id: a.id, name: a.name, position: a.position, present: !!a.present
+      })),
+      topics: (d.topics || []).map(t => ({
+        title: String(t.title || '').slice(0, 300),
+        detail: String(t.detail || '').slice(0, 5000)
+      }))
+    };
+    if (!row.attendance.length) throw new Error('ไม่มีรายชื่อองค์ประชุม');
+    un(await (d.id ? sb.from('meetings').update(row).eq('id', d.id) : sb.from('meetings').insert(row)));
+    return 1;
+  },
+  async delMeeting(d) {
+    un(await sb.from('meetings').delete().eq('id', d.id));
+    return 1;
+  }
+};
+
+async function api(action, data) {
+  if (S.user && Date.now() - last > IDLE) { doLogout(1); throw new Error(''); }
   load(1);
-  try{return await H[action](data||{})}
-  catch(e){if(S.user&&/JWT|refresh token|not authenticated/i.test(e.message||'')){doLogout(1,'หมดเวลาการใช้งาน กรุณาเข้าสู่ระบบใหม่');throw new Error('')}throw e}
-  finally{load(0)}
+  try { return await H[action](data || {}); }
+  catch (e) {
+    if (S.user && /JWT|refresh token|not authenticated/i.test(e.message || '')) {
+      doLogout(1, 'หมดเวลาการใช้งาน กรุณาเข้าสู่ระบบใหม่');
+      throw new Error('');
+    }
+    throw e;
+  } finally { load(0); }
 }
-/* ---------- Auth / idle ---------- */
-async function doLogin(ev){ev.preventDefault();const f=ev.target;$('#lerr').textContent='';
-  try{await api('login',{username:f.u.value,password:f.p.value});f.reset();await boot();toast('ยินดีต้อนรับ '+S.user.name)}catch(e){$('#lerr').textContent=e.message}}
-async function boot(){
-  const r=await api('me');S.user=r.user;S.provinces=r.provinces;S.districts=r.districts;S.subdistricts=r.subdistricts;S.types=r.types;S.my=null;last=Date.now();
-  $('#landing').hidden=true;$('#app').hidden=false;$('#who').textContent=S.user.name+' ('+ROLE[S.user.role]+')';
-  const c=S.user.role==='central';
-  $('#nav').innerHTML=[['dash','แดชบอร์ด'],['meet','การประชุม'],['mem','องค์ประชุม'],...(c?[['users','ผู้ใช้'],['master','ข้อมูลหลัก']]:[])].map(x=>`<button data-v="${x[0]}" onclick="go('${x[0]}')">${x[1]}</button>`).join('');
+
+/* ========== Auth / Idle ========== */
+async function doLogin(ev) {
+  ev.preventDefault();
+  const f = ev.target;
+  $('#lerr').textContent = '';
+  try {
+    await api('login', { username: f.u.value, password: f.p.value });
+    f.reset();
+    await boot();
+    toast('ยินดีต้อนรับ ' + S.user.name);
+  } catch (e) {
+    $('#lerr').textContent = e.message;
+  }
+}
+
+async function boot() {
+  const r = await api('me');
+  S.user = r.user;
+  S.provinces = r.provinces;
+  S.districts = r.districts;
+  S.subdistricts = r.subdistricts;
+  S.types = r.types;
+  S.my = null;
+  last = Date.now();
+  $('#landing').hidden = true;
+  $('#app').hidden = false;
+  $('#who').textContent = S.user.name + ' (' + ROLE[S.user.role] + ')';
+  const c = S.user.role === 'central';
+  $('#nav').innerHTML = [
+    ['dash', 'แดชบอร์ด'],
+    ['meet', 'การประชุม'],
+    ['mem', 'องค์ประชุม'],
+    ...(c ? [['users', 'ผู้ใช้'], ['master', 'ข้อมูลหลัก']] : [])
+  ].map(x => `<button data-v="${x[0]}" onclick="go('${x[0]}')">${x[1]}</button>`).join('');
   go('dash');
 }
-function doLogout(auto,msg){
-  sb.auth.signOut().catch(()=>{});
-  S.user=null;S.meetings=[];S.users=[];S.members=[];S.my=null;closeM();
-  $('#app').hidden=true;$('#landing').hidden=false;$('#view').innerHTML='';
-  $('#lerr').textContent=auto?(msg||'ออกจากระบบอัตโนมัติ เนื่องจากไม่มีการใช้งานเกิน 30 นาที'):'';scrollTo(0,0);
-  if(auto)Swal.fire({icon:'info',title:'ออกจากระบบอัตโนมัติ',text:msg||'ไม่มีการใช้งานเกิน 30 นาที กรุณาเข้าสู่ระบบใหม่',confirmButtonText:'ตกลง'});
-}
-let warned=false;
-['click','keydown','mousemove','touchstart','scroll'].forEach(e=>addEventListener(e,()=>{if(S.user){last=Date.now();if(warned){warned=false;Swal.close()}}},{passive:true}));
-setInterval(()=>{
-  if(!S.user)return;const idle=Date.now()-last;
-  if(idle>IDLE){warned=false;doLogout(1)}
-  else if(idle>IDLE-60000&&!warned){warned=true;Swal.fire({icon:'warning',title:'ไม่มีการใช้งานนาน',html:'ระบบจะออกจากระบบใน <b></b> วินาที',timer:Math.max(IDLE-idle,1000),timerProgressBar:true,allowOutsideClick:false,confirmButtonText:'ใช้งานต่อ',didOpen:()=>{const b=Swal.getHtmlContainer().querySelector('b');const t=setInterval(()=>{b.textContent=Math.ceil(Swal.getTimerLeft()/1000)},250);Swal.getPopup()._t=t},willClose:()=>clearInterval(Swal.getPopup()._t)}).then(r=>{if(r.isConfirmed){last=Date.now()}warned=false})}
-},5000);
-document.addEventListener('visibilitychange',()=>{if(S.user&&Date.now()-last>IDLE)doLogout(1)});
-sb.auth.getSession().then(r=>{if(r.data.session)boot().catch(()=>{})});
 
-/* ---------- Router ---------- */
-const go=safe(async v=>{S.view=v;document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
-  if(v==='dash'||v==='meet')await ensureM();
-  await({dash:viewDash,meet:viewMeet,mem:viewMem,users:viewUsers,master:viewMaster})[v]()});
-const redraw=()=>go(S.view);
-async function ensureM(){if(S.my!==F.year){S.meetings=await api('listMeetings',{year:F.year});S.my=F.year}}
-const setF=safe(async(k,v)=>{F[k]=v;if(k==='prov'){F.dist='';F.sub=''}if(k==='dist')F.sub='';if(k==='year')F.year=+v;await redraw()});
-const fm=()=>S.meetings.filter(m=>(!F.prov||m.provinceId===F.prov)&&(!F.dist||m.districtId===F.dist)&&(!F.sub||m.subdistrictId===F.sub)&&(!F.type||m.typeId===F.type)&&(!F.month||m.date.slice(5,7)===F.month));
-function filterBar(mon){
-  const y=new Date().getFullYear(),ys=[];for(let i=y+1;i>=y-5;i--)ys.push({id:String(i),name:String(i+543)});
-  const ds=S.districts.filter(d=>!F.prov||d.provinceId===F.prov).map(distL),ss=S.subdistricts.filter(s=>(!F.dist||s.districtId===F.dist)&&(!F.prov||(S.districts.find(d=>d.id===s.districtId)||{}).provinceId===F.prov)).map(subL);
-  const ms=TH.map((n,i)=>({id:String(i+1).padStart(2,'0'),name:n}));
-  return `<div class="card fl">
-  <label>ปี (พ.ศ.)<select onchange="setF('year',this.value)">${opts(ys,String(F.year))}</select></label>
-  ${mon?`<label>เดือน<select onchange="setF('month',this.value)">${opts(ms,F.month,'ทุกเดือน')}</select></label>`:''}
-  <label>จังหวัด<select onchange="setF('prov',this.value)">${opts(S.provinces,F.prov,'ทั้งหมด')}</select></label>
-  <label>อำเภอ<select onchange="setF('dist',this.value)">${opts(ds,F.dist,'ทั้งหมด')}</select></label>
-  <label>ตำบล<select onchange="setF('sub',this.value)">${opts(ss,F.sub,'ทั้งหมด')}</select></label>
-  <label>ประเภท<select onchange="setF('type',this.value)">${opts(S.types,F.type,'ทั้งหมด')}</select></label></div>`}
-const tot=L=>L.reduce((a,m)=>({n:a.n+1,t:a.t+m.total,p:a.p+m.present}),{n:0,t:0,p:0});
-const btns=`<button class="btn sec" onclick="expX()">Excel</button> <button class="btn" onclick="expP()">PDF สรุป</button>`;
-
-/* ---------- Dashboard ---------- */
-function viewDash(){
-  const L=fm(),T=tot(L);
-  const mo=THS.map((n,i)=>{const k=String(i+1).padStart(2,'0'),x=L.filter(m=>m.date.slice(5,7)===k),t=tot(x);return{n,c:t.n,t:t.t,p:t.p,r:pct(t.p,t.t)}});
-  const by={};L.forEach(m=>{(by[m.subdistrictId]=by[m.subdistrictId]||[]).push(m)});
-  const rows=Object.keys(by).map(id=>{const t=tot(by[id]),m=by[id][0];return{id,s:nm(S.subdistricts,id),d:nm(S.districts,m.districtId),...t,r:pct(t.p,t.t)}}).sort((a,b)=>b.r-a.r);
-  $('#view').innerHTML=`<div class="head"><h2>แดชบอร์ดปี ${F.year+543}</h2><div>${btns}</div></div>${filterBar()}
-  <div class="kpi"><div><b>${T.n}</b><span>จำนวนการประชุม (ครั้ง)</span></div><div><b>${T.t}</b><span>องค์ประชุมรวม (คน-ครั้ง)</span></div><div><b>${T.p}</b><span>เข้าร่วม</span></div><div><b>${T.t-T.p}</b><span>ไม่เข้าร่วม</span></div><div><b>${pct(T.p,T.t)}%</b><span>อัตราการเข้าร่วม</span></div></div>
-  <div class="card"><h3 style="margin-bottom:10px">อัตราการเข้าร่วมประชุมรายเดือน (%)</h3><div class="bars">${mo.map(m=>`<div class="bar"><b>${m.c?m.r+'%':''}</b><div class="col"><i class="${m.c?'':'z'}" style="height:${m.r}%"></i></div><span>${m.n}</span><small>${m.c} ครั้ง</small></div>`).join('')}</div></div>
-  <div class="card tw"><h3 style="margin-bottom:10px">สรุปรายตำบล</h3>${rows.length?`<table><tr><th>ตำบล</th><th>อำเภอ</th><th class="n">ประชุม (ครั้ง)</th><th class="n">องค์ประชุมรวม</th><th class="n">เข้าร่วม</th><th class="n">ร้อยละ</th></tr>${rows.map(r=>`<tr><td>${esc(r.s)}</td><td>${esc(r.d)}</td><td class="n">${r.n}</td><td class="n">${r.t}</td><td class="n">${r.p}</td><td class="n">${r.r}%</td></tr>`).join('')}</table>`:'<div class="empty">ยังไม่มีข้อมูลการประชุมตามเงื่อนไขที่เลือก</div>'}</div>`;
+function doLogout(auto, msg) {
+  sb.auth.signOut().catch(() => {});
+  S.user = null;
+  S.meetings = [];
+  S.users = [];
+  S.members = [];
+  S.my = null;
+  closeM();
+  $('#app').hidden = true;
+  $('#landing').hidden = false;
+  $('#view').innerHTML = '';
+  $('#lerr').textContent = auto ? (msg || 'ออกจากระบบอัตโนมัติ เนื่องจากไม่มีการใช้งานเกิน 30 นาที') : '';
+  scrollTo(0, 0);
+  if (auto) {
+    Swal.fire({
+      icon: 'info',
+      title: 'ออกจากระบบอัตโนมัติ',
+      text: msg || 'ไม่มีการใช้งานเกิน 30 นาที กรุณาเข้าสู่ระบบใหม่',
+      confirmButtonText: 'ตกลง'
+    });
+  }
 }
 
-/* ---------- Meetings list ---------- */
-const canEd=m=>{const u=S.user;return u.role==='central'||(u.role==='district'&&m.districtId===u.districtId)||(u.role==='subdistrict'&&m.subdistrictId===u.subdistrictId)};
-function viewMeet(){
-  const L=fm(),ed=S.user.role!=='province';
-  $('#view').innerHTML=`<div class="head"><h2>การประชุม</h2><div>${ed?'<button class="btn" onclick="openMeeting()">+ เพิ่มการประชุม</button> ':''}${btns}</div></div>${filterBar(1)}
-  <div class="card tw">${L.length?`<table><tr><th>วันที่</th><th>ประเภท / เรื่อง</th><th>พื้นที่</th><th class="n">องค์ประชุม</th><th class="n">เข้า</th><th class="n">ไม่เข้า</th><th></th></tr>${L.map(m=>`<tr><td>${thDate(m.date)}</td><td>${esc(nm(S.types,m.typeId))}<br><small>${esc(m.title)}</small></td><td>${esc(nm(S.subdistricts,m.subdistrictId))}<br><small>อ.${esc(nm(S.districts,m.districtId))}</small></td><td class="n">${m.total}</td><td class="n">${m.present}</td><td class="n">${m.absent}</td>
-  <td style="white-space:nowrap"><button class="btn sec sm" onclick="mPDF('${m.id}')">PDF</button> <button class="btn sec sm" onclick="openMeeting('${m.id}')">${canEd(m)?'แก้ไข':'ดู'}</button> ${canEd(m)?`<button class="btn bad sm" onclick="delMeet('${m.id}')">ลบ</button>`:''}</td></tr>`).join('')}</table>`:'<div class="empty">ยังไม่มีการประชุม'+(ed?' กด "เพิ่มการประชุม" เพื่อเริ่มบันทึก':'')+'</div>'}</div>`;
-}
-const delMeet=safe(async id=>{if(!await ask('ลบการประชุมนี้?'))return;await api('delMeeting',{id});S.my=null;toast('ลบแล้ว');await redraw()});
-
-/* ---------- Modal ---------- */
-const openM=h=>{$('#box').innerHTML=h;$('#modal').hidden=false};
-const closeM=()=>{$('#modal').hidden=true;$('#box').innerHTML=''};
-const mh=t=>`<div class="mh"><h3>${t}</h3><button onclick="closeM()" aria-label="ปิด">✕</button></div>`;
-
-/* ---------- Meeting form ---------- */
-let FM={id:'',att:[],topics:[],ro:false};
-const openMeeting=safe(async id=>{
-  const m=id?S.meetings.find(x=>x.id===id):null,ro=m?!canEd(m):false,eSubs=S.user.role==='province'?[]:S.subdistricts;
-  if(!m&&!eSubs.length)return toast('ยังไม่มีตำบลในความรับผิดชอบ กรุณาติดต่อส่วนกลาง',1);
-  FM={id:m?m.id:'',ro,att:m?m.attendance.map(a=>({...a})):[],topics:m?m.topics.map(t=>({...t})):[{title:'',detail:''}]};
-  const subs=(ro?S.subdistricts:eSubs).map(subL),sel=m?m.subdistrictId:(subs.length===1?subs[0].id:''),d=ro?'disabled':'';
-  openM(`${mh(m?(ro?'รายละเอียดการประชุม':'แก้ไขการประชุม'):'เพิ่มการประชุม')}
-  <div class="g2"><label>วันที่ประชุม<input type="date" id="f_date" value="${m?m.date:new Date().toISOString().slice(0,10)}" ${d}></label>
-  <label>ประเภทการประชุม<select id="f_type" ${d}>${opts(S.types,m?m.typeId:'', 'เลือก...')}</select></label>
-  <label>ตำบล<select id="f_sub" onchange="subChange()" ${d}>${opts(subs,sel,'เลือก...')}</select></label>
-  <label>เรื่อง / ชื่อการประชุม<input id="f_title" maxlength="300" value="${esc(m?m.title:'')}" ${d}></label></div>
-  <div class="head" style="margin-top:14px"><h4>หัวข้อการประชุม</h4>${ro?'':'<button class="btn sec sm" onclick="addTopic()">+ เพิ่มหัวข้อ</button>'}</div><div id="f_topics"></div>
-  <div class="head" style="margin-top:14px"><h4>องค์ประชุม <span id="cnt" style="font-weight:400;color:var(--mut)"></span></h4>${ro?'':'<div><button class="btn sec sm" onclick="markAll(1)">เลือกทั้งหมด</button> <button class="btn sec sm" onclick="markAll(0)">ล้าง</button> <button class="btn sec sm" onclick="syncMem()">โหลดรายชื่อล่าสุด</button></div>'}</div>
-  <div class="att" id="f_att"></div>${ro?'':'<button class="btn" onclick="saveMeeting()">บันทึกการประชุม</button>'}`);
-  renderTopics();renderAtt();if(!m&&sel)await syncMem();
+let warned = false;
+['click', 'keydown', 'mousemove', 'touchstart', 'scroll'].forEach(e =>
+  addEventListener(e, () => {
+    if (S.user) {
+      last = Date.now();
+      if (warned) { warned = false; Swal.close(); }
+    }
+  }, { passive: true })
+);
+setInterval(() => {
+  if (!S.user) return;
+  const idle = Date.now() - last;
+  if (idle > IDLE) {
+    warned = false;
+    doLogout(1);
+  } else if (idle > IDLE - 60000 && !warned) {
+    warned = true;
+    Swal.fire({
+      icon: 'warning',
+      title: 'ไม่มีการใช้งานนาน',
+      html: 'ระบบจะออกจากระบบใน <b></b> วินาที',
+      timer: Math.max(IDLE - idle, 1000),
+      timerProgressBar: true,
+      allowOutsideClick: false,
+      confirmButtonText: 'ใช้งานต่อ',
+      didOpen: () => {
+        const b = Swal.getHtmlContainer().querySelector('b');
+        const t = setInterval(() => { b.textContent = Math.ceil(Swal.getTimerLeft() / 1000); }, 250);
+        Swal.getPopup()._t = t;
+      },
+      willClose: () => clearInterval(Swal.getPopup()._t)
+    }).then(r => {
+      if (r.isConfirmed) last = Date.now();
+      warned = false;
+    });
+  }
+}, 5000);
+document.addEventListener('visibilitychange', () => {
+  if (S.user && Date.now() - last > IDLE) doLogout(1);
 });
-function renderTopics(){$('#f_topics').innerHTML=FM.topics.map((t,i)=>`<div class="tp"><input placeholder="หัวข้อ" value="${esc(t.title)}" ${FM.ro?'disabled':''}><textarea placeholder="รายละเอียดสำคัญ / มติที่ประชุม" ${FM.ro?'disabled':''}>${esc(t.detail)}</textarea>${FM.ro?'':`<button class="btn sec sm" style="justify-self:end" onclick="rmTopic(${i})">ลบหัวข้อ</button>`}</div>`).join('')}
-function colTopics(){FM.topics=[...document.querySelectorAll('#f_topics .tp')].map(e=>({title:e.querySelector('input').value,detail:e.querySelector('textarea').value}))}
-const addTopic=()=>{colTopics();FM.topics.push({title:'',detail:''});renderTopics()};
-const rmTopic=i=>{colTopics();FM.topics.splice(i,1);renderTopics()};
-function renderAtt(){
-  $('#f_att').innerHTML=FM.att.length?FM.att.map((a,i)=>`<label class="chk"><input type="checkbox" ${a.present?'checked':''} ${FM.ro?'disabled':''} onchange="tick(${i},this.checked)"> ${esc(a.name)} <small>${esc(a.position)}</small></label>`).join(''):'<div class="empty" style="grid-column:1/-1">เลือกตำบลเพื่อโหลดรายชื่อองค์ประชุม</div>';
+sb.auth.getSession().then(r => { if (r.data.session) boot().catch(() => {}); });
+
+/* ========== Router ========== */
+const go = safe(async v => {
+  S.view = v;
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  if (v === 'dash' || v === 'meet') await ensureM();
+  await ({ dash: viewDash, meet: viewMeet, mem: viewMem, users: viewUsers, master: viewMaster })[v]();
+});
+const redraw = () => go(S.view);
+
+async function ensureM() {
+  if (S.my !== F.year) {
+    S.meetings = await api('listMeetings', { year: F.year });
+    S.my = F.year;
+  }
+}
+const setF = safe(async (k, v) => {
+  F[k] = v;
+  if (k === 'prov') { F.dist = ''; F.sub = ''; }
+  if (k === 'dist') F.sub = '';
+  if (k === 'year') F.year = +v;
+  await redraw();
+});
+const fm = () => S.meetings.filter(m =>
+  (!F.prov || m.provinceId === F.prov) &&
+  (!F.dist || m.districtId === F.dist) &&
+  (!F.sub  || m.subdistrictId === F.sub) &&
+  (!F.type || m.typeId === F.type) &&
+  (!F.month || m.date.slice(5, 7) === F.month)
+);
+
+function filterBar(mon) {
+  const y = new Date().getFullYear(), ys = [];
+  for (let i = y + 1; i >= y - 5; i--) ys.push({ id: String(i), name: String(i + 543) });
+  const ds = S.districts.filter(d => !F.prov || d.provinceId === F.prov).map(distL);
+  const ss = S.subdistricts.filter(s =>
+    (!F.dist || s.districtId === F.dist) &&
+    (!F.prov || (S.districts.find(d => d.id === s.districtId) || {}).provinceId === F.prov)
+  ).map(subL);
+  const ms = TH.map((n, i) => ({ id: String(i + 1).padStart(2, '0'), name: n }));
+  return `<div class="card fl">
+    <label>ปี (พ.ศ.)<select onchange="setF('year',this.value)">${opts(ys, String(F.year))}</select></label>
+    ${mon ? `<label>เดือน<select onchange="setF('month',this.value)">${opts(ms, F.month, 'ทุกเดือน')}</select></label>` : ''}
+    <label>จังหวัด<select onchange="setF('prov',this.value)">${opts(S.provinces, F.prov, 'ทั้งหมด')}</select></label>
+    <label>อำเภอ<select onchange="setF('dist',this.value)">${opts(ds, F.dist, 'ทั้งหมด')}</select></label>
+    <label>ตำบล<select onchange="setF('sub',this.value)">${opts(ss, F.sub, 'ทั้งหมด')}</select></label>
+    <label>ประเภท<select onchange="setF('type',this.value)">${opts(S.types, F.type, 'ทั้งหมด')}</select></label>
+  </div>`;
+}
+
+const tot = L => L.reduce((a, m) => ({ n: a.n + 1, t: a.t + m.total, p: a.p + m.present }), { n: 0, t: 0, p: 0 });
+const btns = `<button class="btn sec" onclick="expX()">Excel</button> <button class="btn" onclick="expP()">PDF สรุป</button>`;
+
+/* ========== Dashboard ========== */
+function viewDash() {
+  const L = fm(), T = tot(L);
+  const mo = THS.map((n, i) => {
+    const k = String(i + 1).padStart(2, '0');
+    const x = L.filter(m => m.date.slice(5, 7) === k);
+    const t = tot(x);
+    return { n, c: t.n, t: t.t, p: t.p, r: pct(t.p, t.t) };
+  });
+  const by = {};
+  L.forEach(m => { (by[m.subdistrictId] = by[m.subdistrictId] || []).push(m); });
+  const rows = Object.keys(by).map(id => {
+    const t = tot(by[id]), m = by[id][0];
+    return { id, s: nm(S.subdistricts, id), d: nm(S.districts, m.districtId), ...t, r: pct(t.p, t.t) };
+  }).sort((a, b) => b.r - a.r);
+
+  $('#view').innerHTML = `
+    <div class="head"><h2>แดชบอร์ดปี ${F.year + 543}</h2><div>${btns}</div></div>
+    ${filterBar()}
+    <div class="kpi">
+      <div><b>${T.n}</b><span>จำนวนการประชุม (ครั้ง)</span></div>
+      <div><b>${T.t}</b><span>องค์ประชุมรวม (คน-ครั้ง)</span></div>
+      <div><b>${T.p}</b><span>เข้าร่วม</span></div>
+      <div><b>${T.t - T.p}</b><span>ไม่เข้าร่วม</span></div>
+      <div><b>${pct(T.p, T.t)}%</b><span>อัตราการเข้าร่วม</span></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:12px;font-size:16px;color:var(--navy)">อัตราการเข้าร่วมประชุมรายเดือน (%)</h3>
+      <div class="bars">${mo.map(m => `
+        <div class="bar">
+          <b>${m.c ? m.r + '%' : ''}</b>
+          <div class="col"><i class="${m.c ? '' : 'z'}" style="height:${m.r}%"></i></div>
+          <span>${m.n}</span>
+          <small>${m.c} ครั้ง</small>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="card tw">
+      <h3 style="margin-bottom:12px;font-size:16px;color:var(--navy)">สรุปรายตำบล</h3>
+      ${rows.length ? `
+        <table>
+          <tr><th>ตำบล</th><th>อำเภอ</th><th class="n">ประชุม (ครั้ง)</th><th class="n">องค์ประชุมรวม</th><th class="n">เข้าร่วม</th><th class="n">ร้อยละ</th></tr>
+          ${rows.map(r => `<tr>
+            <td>${esc(r.s)}</td><td>${esc(r.d)}</td>
+            <td class="n">${r.n}</td><td class="n">${r.t}</td><td class="n">${r.p}</td><td class="n">${r.r}%</td>
+          </tr>`).join('')}
+        </table>` : '<div class="empty">ยังไม่มีข้อมูลการประชุมตามเงื่อนไขที่เลือก</div>'}
+    </div>`;
+}
+
+/* ========== Meetings ========== */
+const canEd = m => {
+  const u = S.user;
+  return u.role === 'central' ||
+    (u.role === 'district' && m.districtId === u.districtId) ||
+    (u.role === 'subdistrict' && m.subdistrictId === u.subdistrictId);
+};
+
+function viewMeet() {
+  const L = fm(), ed = S.user.role !== 'province';
+  $('#view').innerHTML = `
+    <div class="head">
+      <h2>การประชุม</h2>
+      <div>${ed ? '<button class="btn" onclick="openMeeting()">+ เพิ่มการประชุม</button> ' : ''}${btns}</div>
+    </div>
+    ${filterBar(1)}
+    <div class="card tw">
+      ${L.length ? `
+        <table>
+          <tr><th>วันที่</th><th>ประเภท / เรื่อง</th><th>พื้นที่</th><th class="n">องค์ประชุม</th><th class="n">เข้า</th><th class="n">ไม่เข้า</th><th></th></tr>
+          ${L.map(m => `<tr>
+            <td>${thDate(m.date)}</td>
+            <td>${esc(nm(S.types, m.typeId))}<br><small style="color:var(--mut)">${esc(m.title)}</small></td>
+            <td>${esc(nm(S.subdistricts, m.subdistrictId))}<br><small style="color:var(--mut)">อ.${esc(nm(S.districts, m.districtId))}</small></td>
+            <td class="n">${m.total}</td><td class="n">${m.present}</td><td class="n">${m.absent}</td>
+            <td style="white-space:nowrap">
+              <button class="btn sec sm" onclick="mPDF('${m.id}')">PDF</button>
+              <button class="btn sec sm" onclick="openMeeting('${m.id}')">${canEd(m) ? 'แก้ไข' : 'ดู'}</button>
+              ${canEd(m) ? `<button class="btn bad sm" onclick="delMeet('${m.id}')">ลบ</button>` : ''}
+            </td>
+          </tr>`).join('')}
+        </table>` : `<div class="empty">ยังไม่มีการประชุม${ed ? ' กด "+ เพิ่มการประชุม" เพื่อเริ่มบันทึก' : ''}</div>`}
+    </div>`;
+}
+
+const delMeet = safe(async id => {
+  if (!await ask('ลบการประชุมนี้?')) return;
+  await api('delMeeting', { id });
+  S.my = null;
+  toast('ลบแล้ว');
+  await redraw();
+});
+
+/* ========== Modal ========== */
+const openM = h => { $('#box').innerHTML = h; $('#modal').hidden = false; };
+const closeM = () => { $('#modal').hidden = true; $('#box').innerHTML = ''; };
+const mh = t => `<div class="mh"><h3>${t}</h3><button onclick="closeM()" aria-label="ปิด">✕</button></div>`;
+
+/* ========== Meeting form ========== */
+let FM = { id: '', att: [], topics: [], ro: false };
+
+const openMeeting = safe(async id => {
+  const m = id ? S.meetings.find(x => x.id === id) : null;
+  const ro = m ? !canEd(m) : false;
+  const eSubs = S.user.role === 'province' ? [] : S.subdistricts;
+  if (!m && !eSubs.length) return toast('ยังไม่มีตำบลในความรับผิดชอบ กรุณาติดต่อส่วนกลาง', 1);
+
+  FM = {
+    id: m ? m.id : '',
+    ro,
+    att: m ? m.attendance.map(a => ({ ...a })) : [],
+    topics: m ? m.topics.map(t => ({ ...t })) : [{ title: '', detail: '' }]
+  };
+  const subs = (ro ? S.subdistricts : eSubs).map(subL);
+  const sel = m ? m.subdistrictId : (subs.length === 1 ? subs[0].id : '');
+  const d = ro ? 'disabled' : '';
+
+  openM(`${mh(m ? (ro ? 'รายละเอียดการประชุม' : 'แก้ไขการประชุม') : 'เพิ่มการประชุม')}
+    <div class="g2">
+      <label>วันที่ประชุม<input type="date" id="f_date" value="${m ? m.date : new Date().toISOString().slice(0, 10)}" ${d}></label>
+      <label>ประเภทการประชุม<select id="f_type" ${d}>${opts(S.types, m ? m.typeId : '', 'เลือก...')}</select></label>
+      <label>ตำบล<select id="f_sub" onchange="subChange()" ${d}>${opts(subs, sel, 'เลือก...')}</select></label>
+      <label>เรื่อง / ชื่อการประชุม<input id="f_title" maxlength="300" value="${esc(m ? m.title : '')}" ${d}></label>
+    </div>
+    <div class="head" style="margin-top:18px">
+      <h4 style="font-size:15px;color:var(--navy)">หัวข้อการประชุม</h4>
+      ${ro ? '' : '<button class="btn sec sm" onclick="addTopic()">+ เพิ่มหัวข้อ</button>'}
+    </div>
+    <div id="f_topics"></div>
+    <div class="head" style="margin-top:18px">
+      <h4 style="font-size:15px;color:var(--navy)">องค์ประชุม <span id="cnt" style="font-weight:400;color:var(--mut)"></span></h4>
+      ${ro ? '' : `<div>
+        <button class="btn sec sm" onclick="markAll(1)">เลือกทั้งหมด</button>
+        <button class="btn sec sm" onclick="markAll(0)">ล้าง</button>
+        <button class="btn sec sm" onclick="syncMem()">โหลดรายชื่อล่าสุด</button>
+      </div>`}
+    </div>
+    <div class="att" id="f_att"></div>
+    ${ro ? '' : '<button class="btn" style="margin-top:8px" onclick="saveMeeting()">บันทึกการประชุม</button>'}`);
+  renderTopics();
+  renderAtt();
+  if (!m && sel) await syncMem();
+});
+
+function renderTopics() {
+  $('#f_topics').innerHTML = FM.topics.map((t, i) => `
+    <div class="tp">
+      <input placeholder="หัวข้อ" value="${esc(t.title)}" ${FM.ro ? 'disabled' : ''}>
+      <textarea placeholder="รายละเอียดสำคัญ / มติที่ประชุม" ${FM.ro ? 'disabled' : ''}>${esc(t.detail)}</textarea>
+      ${FM.ro ? '' : `<button class="btn sec sm" style="justify-self:end" onclick="rmTopic(${i})">ลบหัวข้อ</button>`}
+    </div>`).join('');
+}
+function colTopics() {
+  FM.topics = [...document.querySelectorAll('#f_topics .tp')].map(e => ({
+    title: e.querySelector('input').value,
+    detail: e.querySelector('textarea').value
+  }));
+}
+const addTopic = () => { colTopics(); FM.topics.push({ title: '', detail: '' }); renderTopics(); };
+const rmTopic = i => { colTopics(); FM.topics.splice(i, 1); renderTopics(); };
+
+function renderAtt() {
+  $('#f_att').innerHTML = FM.att.length
+    ? FM.att.map((a, i) => `
+      <label class="chk">
+        <input type="checkbox" ${a.present ? 'checked' : ''} ${FM.ro ? 'disabled' : ''} onchange="tick(${i},this.checked)">
+        ${esc(a.name)} <small>${esc(a.position)}</small>
+      </label>`).join('')
+    : '<div class="empty" style="grid-column:1/-1">เลือกตำบลเพื่อโหลดรายชื่อองค์ประชุม</div>';
   cnt();
 }
-function cnt(){const p=FM.att.filter(a=>a.present).length;$('#cnt').textContent=`ทั้งหมด ${FM.att.length} | เข้าร่วม ${p} | ไม่เข้าร่วม ${FM.att.length-p}`}
-const tick=(i,v)=>{FM.att[i].present=v;cnt()};
-const markAll=v=>{FM.att.forEach(a=>a.present=!!v);renderAtt()};
-const syncMem=safe(async()=>{const sid=$('#f_sub').value;if(!sid)return;const r=await api('listMembers',{subdistrictId:sid}),have=new Set(FM.att.map(x=>x.id));
-  r.forEach(x=>{if(!have.has(x.id))FM.att.push({id:x.id,name:x.name,position:x.position,present:false})});renderAtt();if(!r.length)toast('ตำบลนี้ยังไม่มีรายชื่อองค์ประชุม (เพิ่มได้ที่เมนู องค์ประชุม)',1)});
-const subChange=()=>{FM.att=[];renderAtt();syncMem()};
-const saveMeeting=safe(async()=>{colTopics();
-  const d={id:FM.id,date:$('#f_date').value,typeId:$('#f_type').value,subdistrictId:$('#f_sub').value,title:$('#f_title').value.trim(),attendance:FM.att,topics:FM.topics.filter(t=>t.title.trim()||t.detail.trim())};
-  if(!d.date||!d.typeId||!d.subdistrictId)return toast('กรอกวันที่ ประเภท และตำบลให้ครบ',1);
-  if(!d.attendance.length)return toast('ยังไม่มีรายชื่อองค์ประชุม',1);
-  await api('saveMeeting',d);closeM();S.my=null;toast('บันทึกแล้ว');await redraw()});
-
-/* ---------- Members ---------- */
-const M={sub:''};
-async function viewMem(){
-  const subs=S.subdistricts;if(!subs.find(s=>s.id===M.sub))M.sub=subs[0]?subs[0].id:'';
-  S.members=M.sub?await api('listMembers',{subdistrictId:M.sub}):[];
-  const ed=S.user.role!=='province';
-  $('#view').innerHTML=`<div class="head"><h2>องค์ประชุม</h2>${ed&&M.sub?'<div><button class="btn sec" onclick="openBulk()">เพิ่มหลายรายชื่อ</button> <button class="btn" onclick="openMember()">+ เพิ่มรายชื่อ</button></div>':''}</div>
-  <div class="card"><label>ตำบล<select onchange="M.sub=this.value;redraw()">${opts(subs.map(subL),M.sub)}</select></label></div>
-  <div class="card tw">${S.members.length?`<table><tr><th>#</th><th>ชื่อ-สกุล</th><th>ตำแหน่ง</th><th></th></tr>${S.members.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.name)}</td><td>${esc(x.position)}</td><td style="white-space:nowrap">${ed?`<button class="btn sec sm" onclick="openMember('${x.id}')">แก้ไข</button> <button class="btn bad sm" onclick="delMem('${x.id}')">ลบ</button>`:''}</td></tr>`).join('')}</table>`:'<div class="empty">ยังไม่มีรายชื่อองค์ประชุมในตำบลนี้</div>'}</div>`;
+function cnt() {
+  const p = FM.att.filter(a => a.present).length;
+  $('#cnt').textContent = `ทั้งหมด ${FM.att.length} | เข้าร่วม ${p} | ไม่เข้าร่วม ${FM.att.length - p}`;
 }
-function openMember(id){const x=S.members.find(m=>m.id===id)||{name:'',position:''};
-  openM(`${mh(id?'แก้ไของค์ประชุม':'เพิ่มองค์ประชุม')}<div class="g2"><label>ชื่อ-สกุล<input id="m_n" value="${esc(x.name)}"></label><label>ตำแหน่ง<input id="m_p" value="${esc(x.position)}"></label></div><p><button class="btn" onclick="saveMem('${id||''}')">บันทึก</button></p>`)}
-const saveMem=safe(async id=>{await api('saveMember',{id,subdistrictId:M.sub,name:$('#m_n').value,position:$('#m_p').value});closeM();toast('บันทึกแล้ว');await redraw()});
-const delMem=safe(async id=>{if(!await ask('ลบรายชื่อนี้? (การประชุมที่บันทึกไว้แล้วไม่ได้รับผลกระทบ)'))return;await api('delMember',{id});await redraw()});
-function openBulk(){openM(`${mh('เพิ่มหลายรายชื่อ')}<label>พิมพ์/วาง 1 บรรทัดต่อ 1 คน รูปแบบ: ชื่อ-สกุล, ตำแหน่ง<textarea id="b_t" style="min-height:220px" placeholder="นายสมชาย ใจดี, นายก อบต.&#10;นางสมหญิง รักดี, ประธานสภา"></textarea></label><p><button class="btn" onclick="saveBulk()">บันทึกทั้งหมด</button></p>`)}
-const saveBulk=safe(async()=>{const list=$('#b_t').value.split('\n').map(l=>{const [n,...p]=l.split(',');return{name:n.trim(),position:p.join(',').trim()}}).filter(x=>x.name);
-  const n=await api('saveMembers',{subdistrictId:M.sub,list});closeM();toast('เพิ่ม '+n+' รายชื่อ');await redraw()});
+const tick = (i, v) => { FM.att[i].present = v; cnt(); };
+const markAll = v => { FM.att.forEach(a => a.present = !!v); renderAtt(); };
+const syncMem = safe(async () => {
+  const sid = $('#f_sub').value;
+  if (!sid) return;
+  const r = await api('listMembers', { subdistrictId: sid });
+  const have = new Set(FM.att.map(x => x.id));
+  r.forEach(x => {
+    if (!have.has(x.id)) FM.att.push({ id: x.id, name: x.name, position: x.position, present: false });
+  });
+  renderAtt();
+  if (!r.length) toast('ตำบลนี้ยังไม่มีรายชื่อองค์ประชุม (เพิ่มได้ที่เมนู องค์ประชุม)', 1);
+});
+const subChange = () => { FM.att = []; renderAtt(); syncMem(); };
+const saveMeeting = safe(async () => {
+  colTopics();
+  const d = {
+    id: FM.id,
+    date: $('#f_date').value,
+    typeId: $('#f_type').value,
+    subdistrictId: $('#f_sub').value,
+    title: $('#f_title').value.trim(),
+    attendance: FM.att,
+    topics: FM.topics.filter(t => t.title.trim() || t.detail.trim())
+  };
+  if (!d.date || !d.typeId || !d.subdistrictId) return toast('กรอกวันที่ ประเภท และตำบลให้ครบ', 1);
+  if (!d.attendance.length) return toast('ยังไม่มีรายชื่อองค์ประชุม', 1);
+  await api('saveMeeting', d);
+  closeM();
+  S.my = null;
+  toast('บันทึกแล้ว');
+  await redraw();
+});
 
-/* ---------- Users (central) ---------- */
-async function viewUsers(){
-  S.users=await api('listUsers');
-  $('#view').innerHTML=`<div class="head"><h2>ผู้ใช้งาน</h2></div><p style="color:var(--mut)">เพิ่มบัญชีใหม่ที่ Supabase &gt; Authentication &gt; Users แล้วกลับมากำหนดระดับ พื้นที่ และเปิดใช้งานที่นี่ (บัญชีใหม่จะเข้าใช้งานไม่ได้จนกว่าจะเปิดใช้งาน)</p><div class="card tw"><table><tr><th>ชื่อผู้ใช้</th><th>ชื่อ</th><th>ระดับ</th><th>พื้นที่</th><th>สถานะ</th><th></th></tr>${S.users.map(u=>`<tr><td>${esc(u.username)}</td><td>${esc(u.name)}</td><td>${ROLE[u.role]||'รอกำหนดสิทธิ์'}</td><td>${esc(u.role==='subdistrict'?nm(S.subdistricts,u.subdistrictId):u.role==='district'?nm(S.districts,u.districtId):u.role==='province'?nm(S.provinces,u.provinceId):u.role==='central'?'ทั้งหมด':'-')}</td><td><span class="tag ${u.active==='Y'?'ok':'no'}">${u.active==='Y'?'ใช้งาน':'ปิด'}</span></td><td style="white-space:nowrap"><button class="btn sec sm" onclick="openUser('${u.id}')">แก้ไข</button></td></tr>`).join('')}</table></div>`;
+/* ========== Members ========== */
+const M = { sub: '' };
+
+async function viewMem() {
+  const subs = S.subdistricts;
+  if (!subs.find(s => s.id === M.sub)) M.sub = subs[0] ? subs[0].id : '';
+  S.members = M.sub ? await api('listMembers', { subdistrictId: M.sub }) : [];
+  const ed = S.user.role !== 'province';
+  $('#view').innerHTML = `
+    <div class="head">
+      <h2>องค์ประชุม</h2>
+      ${ed && M.sub ? `<div>
+        <button class="btn sec" onclick="openBulk()">เพิ่มหลายรายชื่อ</button>
+        <button class="btn" onclick="openMember()">+ เพิ่มรายชื่อ</button>
+      </div>` : ''}
+    </div>
+    <div class="card">
+      <label>ตำบล<select onchange="M.sub=this.value;redraw()">${opts(subs.map(subL), M.sub)}</select></label>
+    </div>
+    <div class="card tw">
+      ${S.members.length ? `
+        <table>
+          <tr><th>#</th><th>ชื่อ-สกุล</th><th>ตำแหน่ง</th><th></th></tr>
+          ${S.members.map((x, i) => `<tr>
+            <td>${i + 1}</td><td>${esc(x.name)}</td><td>${esc(x.position)}</td>
+            <td style="white-space:nowrap">
+              ${ed ? `<button class="btn sec sm" onclick="openMember('${x.id}')">แก้ไข</button>
+              <button class="btn bad sm" onclick="delMem('${x.id}')">ลบ</button>` : ''}
+            </td>
+          </tr>`).join('')}
+        </table>` : '<div class="empty">ยังไม่มีรายชื่อองค์ประชุมในตำบลนี้</div>'}
+    </div>`;
 }
-function openUser(id){const u=S.users.find(x=>x.id===id)||{username:'',name:'',role:'subdistrict',provinceId:'',districtId:'',subdistrictId:'',active:'Y'};
-  openM(`${mh('กำหนดสิทธิ์ผู้ใช้')}<div class="g2"><label>อีเมล<input id="u_un" value="${esc(u.username)}" disabled></label><label>ชื่อ-สกุล<input id="u_nm" value="${esc(u.name)}"></label>
-  <label>ระดับ<select id="u_r" onchange="uRole()">${opts(Object.keys(ROLE).map(k=>({id:k,name:ROLE[k]})),u.role,'เลือก...')}</select></label>
-  
-  <label id="u_pl">จังหวัด<select id="u_p">${opts(S.provinces,u.provinceId,'เลือก...')}</select></label>
-  <label id="u_dl">อำเภอ<select id="u_d">${opts(S.districts.map(distL),u.districtId,'เลือก...')}</select></label>
-  <label id="u_sl">ตำบล<select id="u_s">${opts(S.subdistricts.map(subL),u.subdistrictId,'เลือก...')}</select></label>
-  <label class="chk"><input type="checkbox" id="u_a" ${u.active==='Y'?'checked':''}> เปิดใช้งานบัญชี</label></div><p><button class="btn" onclick="saveUser('${id||''}')">บันทึก</button></p>`);uRole()}
-function uRole(){const r=$('#u_r').value;$('#u_pl').hidden=r!=='province';$('#u_dl').hidden=r!=='district';$('#u_sl').hidden=r!=='subdistrict'}
-const saveUser=safe(async id=>{await api('saveUser',{id,username:$('#u_un').value,name:$('#u_nm').value,role:$('#u_r').value,password:$('#u_pw').value,provinceId:$('#u_p').value,districtId:$('#u_d').value,subdistrictId:$('#u_s').value,active:$('#u_a').checked});closeM();toast('บันทึกแล้ว');await redraw()});
-const delUser=safe(async id=>{if(!await ask('ลบผู้ใช้นี้?'))return;await api('delUser',{id});await redraw()});
 
-/* ---------- Master data (central) ---------- */
-const K={province:{t:'จังหวัด',a:'provinces'},district:{t:'อำเภอ',a:'districts',p:'provinceId',pa:'provinces',pt:'จังหวัด'},subdistrict:{t:'ตำบล',a:'subdistricts',p:'districtId',pa:'districts',pt:'อำเภอ'},type:{t:'ประเภทการประชุม',a:'types'}};
-const MK={tab:'province'};
-function viewMaster(){
-  const k=K[MK.tab],rows=S[k.a];
-  $('#view').innerHTML=`<div class="head"><h2>ข้อมูลหลัก</h2><button class="btn" onclick="openKind()">+ เพิ่ม${k.t}</button></div>
-  <div class="card"><nav style="margin-bottom:10px">${Object.keys(K).map(x=>`<button style="color:var(--navy);border-color:${x===MK.tab?'var(--brass)':'transparent'}" onclick="MK.tab='${x}';viewMaster()">${K[x].t}</button>`).join('')}</nav>
-  <div class="tw">${rows.length?`<table><tr><th>ชื่อ</th>${k.p?`<th>${k.pt}</th>`:''}<th></th></tr>${rows.map(r=>`<tr><td>${esc(r.name)}</td>${k.p?`<td>${esc(nm(S[k.pa],r[k.p]))}</td>`:''}<td style="white-space:nowrap"><button class="btn sec sm" onclick="openKind('${r.id}')">แก้ไข</button> <button class="btn bad sm" onclick="delKind('${r.id}')">ลบ</button></td></tr>`).join('')}</table>`:'<div class="empty">ยังไม่มีข้อมูล</div>'}</div></div>`;
+function openMember(id) {
+  const x = S.members.find(m => m.id === id) || { name: '', position: '' };
+  openM(`${mh(id ? 'แก้ไของค์ประชุม' : 'เพิ่มองค์ประชุม')}
+    <div class="g2">
+      <label>ชื่อ-สกุล<input id="m_n" value="${esc(x.name)}"></label>
+      <label>ตำแหน่ง<input id="m_p" value="${esc(x.position)}"></label>
+    </div>
+    <p style="margin-top:16px"><button class="btn" onclick="saveMem('${id || ''}')">บันทึก</button></p>`);
 }
-function openKind(id){const k=K[MK.tab],r=S[k.a].find(x=>x.id===id)||{name:''};
-  openM(`${mh((id?'แก้ไข':'เพิ่ม')+k.t)}<div class="g2"><label>ชื่อ<input id="k_n" value="${esc(r.name)}"></label>${k.p?`<label>${k.pt}<select id="k_p">${opts(S[k.pa].map(x=>k.pa==='districts'?distL(x):x),r[k.p],'เลือก...')}</select></label>`:''}</div><p><button class="btn" onclick="saveKind('${id||''}')">บันทึก</button></p>`)}
-const reloadMe=async()=>{const r=await api('me');S.provinces=r.provinces;S.districts=r.districts;S.subdistricts=r.subdistricts;S.types=r.types};
-const saveKind=safe(async id=>{const k=K[MK.tab];await api('saveGeo',{kind:MK.tab,id,name:$('#k_n').value,parentId:k.p?$('#k_p').value:''});closeM();await reloadMe();toast('บันทึกแล้ว');viewMaster()});
-const delKind=safe(async id=>{if(!await ask('ลบรายการนี้?'))return;await api('delGeo',{kind:MK.tab,id});await reloadMe();viewMaster()});
-
-/* ---------- Password ---------- */
-function openPw(){openM(`${mh('เปลี่ยนรหัสผ่าน')}<div class="g2"><label>รหัสผ่านเดิม<input id="w_o" type="password" autocomplete="current-password"></label><label>รหัสผ่านใหม่ (อย่างน้อย 8 ตัว)<input id="w_n" type="password" autocomplete="new-password"></label></div><p><button class="btn" onclick="savePw()">บันทึก</button></p>`)}
-const savePw=safe(async()=>{await api('changePassword',{old:$('#w_o').value,pw:$('#w_n').value});closeM();toast('เปลี่ยนรหัสผ่านแล้ว')});
-
-/* ---------- Reports ---------- */
-const area=m=>`ต.${nm(S.subdistricts,m.subdistrictId)} อ.${nm(S.districts,m.districtId)} จ.${nm(S.provinces,m.provinceId)}`;
-async function makePDF(html,fn,land){
-  Swal.fire({title:'กำลังสร้างรายงาน',text:'กรุณารอสักครู่',allowOutsideClick:false,showConfirmButton:false,didOpen:()=>Swal.showLoading()});await document.fonts.ready;const d=document.createElement('div');d.className='rep';d.style.width=(land?1050:730)+'px';d.innerHTML=html;document.body.appendChild(d);
-  let okp=0;try{await html2pdf().set({margin:10,filename:fn,image:{type:'jpeg',quality:.95},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:land?'landscape':'portrait'},pagebreak:{mode:['css','legacy'],avoid:['tr']}}).from(d).save();okp=1}finally{d.remove();Swal.close()}if(okp)toast('สร้างรายงานแล้ว');
+const saveMem = safe(async id => {
+  await api('saveMember', { id, subdistrictId: M.sub, name: $('#m_n').value, position: $('#m_p').value });
+  closeM();
+  toast('บันทึกแล้ว');
+  await redraw();
+});
+const delMem = safe(async id => {
+  if (!await ask('ลบรายชื่อนี้? (การประชุมที่บันทึกไว้แล้วไม่ได้รับผลกระทบ)')) return;
+  await api('delMember', { id });
+  await redraw();
+});
+function openBulk() {
+  openM(`${mh('เพิ่มหลายรายชื่อ')}
+    <label>พิมพ์/วาง 1 บรรทัดต่อ 1 คน รูปแบบ: ชื่อ-สกุล, ตำแหน่ง
+      <textarea id="b_t" style="min-height:220px" placeholder="นายสมชาย ใจดี, นายก อบต.&#10;นางสมหญิง รักดี, ประธานสภา"></textarea>
+    </label>
+    <p style="margin-top:12px"><button class="btn" onclick="saveBulk()">บันทึกทั้งหมด</button></p>`);
 }
-const mPDF=safe(async id=>{const m=S.meetings.find(x=>x.id===id);
-  await makePDF(`<h2>รายงานสรุปผลการประชุม</h2><h3 style="font-weight:400">${esc(nm(S.types,m.typeId))}${m.title?' : '+esc(m.title):''}</h3>
-  <table style="margin:10px 0"><tr><td width="22%"><b>วันที่ประชุม</b></td><td>${thDate(m.date)}</td></tr><tr><td><b>พื้นที่</b></td><td>${esc(area(m))}</td></tr>
-  <tr><td><b>องค์ประชุมทั้งหมด</b></td><td>${m.total} คน</td></tr><tr><td><b>เข้าร่วมประชุม</b></td><td>${m.present} คน (ร้อยละ ${pct(m.present,m.total)})</td></tr><tr><td><b>ไม่เข้าร่วมประชุม</b></td><td>${m.absent} คน</td></tr></table>
-  <div class="l"><h3>หัวข้อการประชุม</h3></div>${m.topics.length?m.topics.map((t,i)=>`<div style="margin:6px 0"><b>${i+1}. ${esc(t.title)}</b><div style="white-space:pre-wrap;padding-left:18px">${esc(t.detail)}</div></div>`).join(''):'<p>-</p>'}
-  <div class="l"><h3 style="margin-top:10px">รายชื่อองค์ประชุม</h3></div><table><tr><th width="8%">ลำดับ</th><th>ชื่อ-สกุล</th><th>ตำแหน่ง</th><th width="18%">การเข้าร่วม</th></tr>${m.attendance.map((a,i)=>`<tr><td align="center">${i+1}</td><td>${esc(a.name)}</td><td>${esc(a.position)}</td><td align="center">${a.present?'เข้าร่วม':'ไม่เข้าร่วม'}</td></tr>`).join('')}</table>
-  <div style="margin-top:36px;text-align:right;padding-right:40px">ลงชื่อ ....................................... ผู้บันทึกการประชุม<br>( ....................................... )</div>`,'สรุปการประชุม_'+m.date+'.pdf')});
-const expP=safe(async()=>{const L=fm(),T=tot(L);if(!L.length)return toast('ไม่มีข้อมูลให้ออกรายงาน',1);
-  await makePDF(`<h2>รายงานสรุปการประชุม ปี ${F.year+543}</h2><p style="text-align:center;margin:0">${F.month?'เดือน'+TH[+F.month-1]+' ':''}${F.sub?'ต.'+esc(nm(S.subdistricts,F.sub))+' ':''}${F.dist?'อ.'+esc(nm(S.districts,F.dist))+' ':''}${F.prov?'จ.'+esc(nm(S.provinces,F.prov)):''}</p>
-  <p>ประชุมทั้งหมด ${T.n} ครั้ง | องค์ประชุมรวม ${T.t} | เข้าร่วม ${T.p} | ไม่เข้าร่วม ${T.t-T.p} | ร้อยละการเข้าร่วม ${pct(T.p,T.t)}</p>
-  <table><tr><th>วันที่</th><th>ประเภท</th><th>เรื่อง</th><th>พื้นที่</th><th>องค์ประชุม</th><th>เข้าร่วม</th><th>ไม่เข้า</th><th>ร้อยละ</th></tr>${L.map(m=>`<tr><td>${thDate(m.date)}</td><td>${esc(nm(S.types,m.typeId))}</td><td>${esc(m.title)}</td><td>${esc(area(m))}</td><td align="center">${m.total}</td><td align="center">${m.present}</td><td align="center">${m.absent}</td><td align="center">${pct(m.present,m.total)}</td></tr>`).join('')}</table>`,'รายงานสรุปการประชุม_'+(F.year+543)+'.pdf',1)});
-const expX=safe(async()=>{const L=fm();if(!L.length)return toast('ไม่มีข้อมูลให้ออกรายงาน',1);
-  const wb=XLSX.utils.book_new(),a=[['วันที่','ประเภท','เรื่อง','จังหวัด','อำเภอ','ตำบล','องค์ประชุม','เข้าร่วม','ไม่เข้าร่วม','ร้อยละ']],b=[['วันที่','ตำบล','เรื่อง','ชื่อ-สกุล','ตำแหน่ง','การเข้าร่วม']],c=[['วันที่','ตำบล','หัวข้อ','รายละเอียด']];
-  L.forEach(m=>{a.push([thDate(m.date),nm(S.types,m.typeId),m.title,nm(S.provinces,m.provinceId),nm(S.districts,m.districtId),nm(S.subdistricts,m.subdistrictId),m.total,m.present,m.absent,pct(m.present,m.total)]);
-    m.attendance.forEach(x=>b.push([thDate(m.date),nm(S.subdistricts,m.subdistrictId),m.title,x.name,x.position,x.present?'เข้าร่วม':'ไม่เข้าร่วม']));
-    m.topics.forEach(t=>c.push([thDate(m.date),nm(S.subdistricts,m.subdistrictId),t.title,t.detail]))});
-  [['สรุปการประชุม',a],['รายชื่อผู้เข้าร่วม',b],['หัวข้อการประชุม',c]].forEach(x=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(x[1]),x[0]));
-  XLSX.writeFile(wb,'รายงานการประชุม_'+(F.year+543)+'.xlsx')});
+const saveBulk = safe(async () => {
+  const list = $('#b_t').value.split('\n').map(l => {
+    const [n, ...p] = l.split(',');
+    return { name: n.trim(), position: p.join(',').trim() };
+  }).filter(x => x.name);
+  const n = await api('saveMembers', { subdistrictId: M.sub, list });
+  closeM();
+  toast('เพิ่ม ' + n + ' รายชื่อ');
+  await redraw();
+});
+
+/* ========== Users (central) ========== */
+async function viewUsers() {
+  S.users = await api('listUsers');
+  $('#view').innerHTML = `
+    <div class="head"><h2>ผู้ใช้งาน</h2></div>
+    <p style="color:var(--mut);font-size:14px;margin:0 0 16px">
+      เพิ่มบัญชีใหม่ที่ Supabase &gt; Authentication &gt; Users แล้วกลับมากำหนดระดับ พื้นที่ และเปิดใช้งานที่นี่
+      (บัญชีใหม่จะเข้าใช้งานไม่ได้จนกว่าจะเปิดใช้งาน)
+    </p>
+    <div class="card tw">
+      <table>
+        <tr><th>ชื่อผู้ใช้</th><th>ชื่อ</th><th>ระดับ</th><th>พื้นที่</th><th>สถานะ</th><th></th></tr>
+        ${S.users.map(u => `<tr>
+          <td>${esc(u.username)}</td>
+          <td>${esc(u.name)}</td>
+          <td>${ROLE[u.role] || 'รอกำหนดสิทธิ์'}</td>
+          <td>${esc(
+            u.role === 'subdistrict' ? nm(S.subdistricts, u.subdistrictId) :
+            u.role === 'district' ? nm(S.districts, u.districtId) :
+            u.role === 'province' ? nm(S.provinces, u.provinceId) :
+            u.role === 'central' ? 'ทั้งหมด' : '-'
+          )}</td>
+          <td><span class="tag ${u.active === 'Y' ? 'ok' : 'no'}">${u.active === 'Y' ? 'ใช้งาน' : 'ปิด'}</span></td>
+          <td><button class="btn sec sm" onclick="openUser('${u.id}')">แก้ไข</button></td>
+        </tr>`).join('')}
+      </table>
+    </div>`;
+}
+
+function openUser(id) {
+  const u = S.users.find(x => x.id === id) || {
+    username: '', name: '', role: 'subdistrict',
+    provinceId: '', districtId: '', subdistrictId: '', active: 'Y'
+  };
+  openM(`${mh('กำหนดสิทธิ์ผู้ใช้')}
+    <div class="g2">
+      <label>อีเมล<input id="u_un" value="${esc(u.username)}" disabled></label>
+      <label>ชื่อ-สกุล<input id="u_nm" value="${esc(u.name)}"></label>
+      <label>ระดับ<select id="u_r" onchange="uRole()">${opts(Object.keys(ROLE).map(k => ({ id: k, name: ROLE[k] })), u.role, 'เลือก...')}</select></label>
+      <label id="u_pl">จังหวัด<select id="u_p">${opts(S.provinces, u.provinceId, 'เลือก...')}</select></label>
+      <label id="u_dl">อำเภอ<select id="u_d">${opts(S.districts.map(distL), u.districtId, 'เลือก...')}</select></label>
+      <label id="u_sl">ตำบล<select id="u_s">${opts(S.subdistricts.map(subL), u.subdistrictId, 'เลือก...')}</select></label>
+      <label class="chk" style="margin-top:8px">
+        <input type="checkbox" id="u_a" ${u.active === 'Y' ? 'checked' : ''}> เปิดใช้งานบัญชี
+      </label>
+    </div>
+    <p style="margin-top:16px"><button class="btn" onclick="saveUser('${id || ''}')">บันทึก</button></p>`);
+  uRole();
+}
+function uRole() {
+  const r = $('#u_r').value;
+  $('#u_pl').hidden = r !== 'province';
+  $('#u_dl').hidden = r !== 'district';
+  $('#u_sl').hidden = r !== 'subdistrict';
+}
+const saveUser = safe(async id => {
+  await api('saveUser', {
+    id,
+    username: $('#u_un').value,
+    name: $('#u_nm').value,
+    role: $('#u_r').value,
+    provinceId: $('#u_p').value,
+    districtId: $('#u_d').value,
+    subdistrictId: $('#u_s').value,
+    active: $('#u_a').checked
+  });
+  closeM();
+  toast('บันทึกแล้ว');
+  await redraw();
+});
+
+/* ========== Master data (central) ========== */
+const K = {
+  province:    { t: 'จังหวัด', a: 'provinces' },
+  district:    { t: 'อำเภอ', a: 'districts', p: 'provinceId', pa: 'provinces', pt: 'จังหวัด' },
+  subdistrict: { t: 'ตำบล', a: 'subdistricts', p: 'districtId', pa: 'districts', pt: 'อำเภอ' },
+  type:        { t: 'ประเภทการประชุม', a: 'types' }
+};
+const MK = { tab: 'province' };
+
+function viewMaster() {
+  const k = K[MK.tab], rows = S[k.a];
+  $('#view').innerHTML = `
+    <div class="head">
+      <h2>ข้อมูลหลัก</h2>
+      <button class="btn" onclick="openKind()">+ เพิ่ม${k.t}</button>
+    </div>
+    <div class="card">
+      <nav style="margin-bottom:14px;display:flex;gap:4px;flex-wrap:wrap">
+        ${Object.keys(K).map(x => `
+          <button class="btn sec sm" style="${x === MK.tab ? 'background:var(--navy);color:#fff;border-color:var(--navy)' : ''}"
+            onclick="MK.tab='${x}';viewMaster()">${K[x].t}</button>`).join('')}
+      </nav>
+      <div class="tw">
+        ${rows.length ? `
+          <table>
+            <tr><th>ชื่อ</th>${k.p ? `<th>${k.pt}</th>` : ''}<th></th></tr>
+            ${rows.map(r => `<tr>
+              <td>${esc(r.name)}</td>
+              ${k.p ? `<td>${esc(nm(S[k.pa], r[k.p]))}</td>` : ''}
+              <td style="white-space:nowrap">
+                <button class="btn sec sm" onclick="openKind('${r.id}')">แก้ไข</button>
+                <button class="btn bad sm" onclick="delKind('${r.id}')">ลบ</button>
+              </td>
+            </tr>`).join('')}
+          </table>` : '<div class="empty">ยังไม่มีข้อมูล</div>'}
+      </div>
+    </div>`;
+}
+
+function openKind(id) {
+  const k = K[MK.tab];
+  const r = S[k.a].find(x => x.id === id) || { name: '' };
+  openM(`${mh((id ? 'แก้ไข' : 'เพิ่ม') + k.t)}
+    <div class="g2">
+      <label>ชื่อ<input id="k_n" value="${esc(r.name)}"></label>
+      ${k.p ? `<label>${k.pt}<select id="k_p">${opts(
+        S[k.pa].map(x => k.pa === 'districts' ? distL(x) : x), r[k.p], 'เลือก...'
+      )}</select></label>` : ''}
+    </div>
+    <p style="margin-top:16px"><button class="btn" onclick="saveKind('${id || ''}')">บันทึก</button></p>`);
+}
+const reloadMe = async () => {
+  const r = await api('me');
+  S.provinces = r.provinces;
+  S.districts = r.districts;
+  S.subdistricts = r.subdistricts;
+  S.types = r.types;
+};
+const saveKind = safe(async id => {
+  const k = K[MK.tab];
+  await api('saveGeo', {
+    kind: MK.tab, id,
+    name: $('#k_n').value,
+    parentId: k.p ? $('#k_p').value : ''
+  });
+  closeM();
+  await reloadMe();
+  toast('บันทึกแล้ว');
+  viewMaster();
+});
+const delKind = safe(async id => {
+  if (!await ask('ลบรายการนี้?')) return;
+  await api('delGeo', { kind: MK.tab, id });
+  await reloadMe();
+  viewMaster();
+});
+
+/* ========== Password ========== */
+function openPw() {
+  openM(`${mh('เปลี่ยนรหัสผ่าน')}
+    <div class="g2">
+      <label>รหัสผ่านเดิม<input id="w_o" type="password" autocomplete="current-password"></label>
+      <label>รหัสผ่านใหม่ (อย่างน้อย 8 ตัว)<input id="w_n" type="password" autocomplete="new-password"></label>
+    </div>
+    <p style="margin-top:16px"><button class="btn" onclick="savePw()">บันทึก</button></p>`);
+}
+const savePw = safe(async () => {
+  await api('changePassword', { old: $('#w_o').value, pw: $('#w_n').value });
+  closeM();
+  toast('เปลี่ยนรหัสผ่านแล้ว');
+});
+
+/* ========== Reports ========== */
+const area = m => `ต.${nm(S.subdistricts, m.subdistrictId)} อ.${nm(S.districts, m.districtId)} จ.${nm(S.provinces, m.provinceId)}`;
+
+async function makePDF(html, fn, land) {
+  Swal.fire({
+    title: 'กำลังสร้างรายงาน', text: 'กรุณารอสักครู่',
+    allowOutsideClick: false, showConfirmButton: false,
+    didOpen: () => Swal.showLoading()
+  });
+  await document.fonts.ready;
+  const d = document.createElement('div');
+  d.className = 'rep';
+  d.style.width = (land ? 1050 : 730) + 'px';
+  d.innerHTML = html;
+  document.body.appendChild(d);
+  let okp = 0;
+  try {
+    await html2pdf().set({
+      margin: 10, filename: fn,
+      image: { type: 'jpeg', quality: .95 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: land ? 'landscape' : 'portrait' },
+      pagebreak: { mode: ['css', 'legacy'], avoid: ['tr'] }
+    }).from(d).save();
+    okp = 1;
+  } finally {
+    d.remove();
+    Swal.close();
+  }
+  if (okp) toast('สร้างรายงานแล้ว');
+}
+
+const mPDF = safe(async id => {
+  const m = S.meetings.find(x => x.id === id);
+  await makePDF(`
+    <h2>รายงานสรุปผลการประชุม</h2>
+    <h3 style="font-weight:400">${esc(nm(S.types, m.typeId))}${m.title ? ' : ' + esc(m.title) : ''}</h3>
+    <table style="margin:10px 0">
+      <tr><td width="22%"><b>วันที่ประชุม</b></td><td>${thDate(m.date)}</td></tr>
+      <tr><td><b>พื้นที่</b></td><td>${esc(area(m))}</td></tr>
+      <tr><td><b>องค์ประชุมทั้งหมด</b></td><td>${m.total} คน</td></tr>
+      <tr><td><b>เข้าร่วมประชุม</b></td><td>${m.present} คน (ร้อยละ ${pct(m.present, m.total)})</td></tr>
+      <tr><td><b>ไม่เข้าร่วมประชุม</b></td><td>${m.absent} คน</td></tr>
+    </table>
+    <div class="l"><h3>หัวข้อการประชุม</h3></div>
+    ${m.topics.length
+      ? m.topics.map((t, i) => `<div style="margin:6px 0"><b>${i + 1}. ${esc(t.title)}</b><div style="white-space:pre-wrap;padding-left:18px">${esc(t.detail)}</div></div>`).join('')
+      : '<p>-</p>'}
+    <div class="l"><h3 style="margin-top:10px">รายชื่อองค์ประชุม</h3></div>
+    <table>
+      <tr><th width="8%">ลำดับ</th><th>ชื่อ-สกุล</th><th>ตำแหน่ง</th><th width="18%">การเข้าร่วม</th></tr>
+      ${m.attendance.map((a, i) => `<tr>
+        <td align="center">${i + 1}</td>
+        <td>${esc(a.name)}</td>
+        <td>${esc(a.position)}</td>
+        <td align="center">${a.present ? 'เข้าร่วม' : 'ไม่เข้าร่วม'}</td>
+      </tr>`).join('')}
+    </table>
+    <div style="margin-top:36px;text-align:right;padding-right:40px">
+      ลงชื่อ ....................................... ผู้บันทึกการประชุม<br>( ....................................... )
+    </div>`, 'สรุปการประชุม_' + m.date + '.pdf');
+});
+
+const expP = safe(async () => {
+  const L = fm(), T = tot(L);
+  if (!L.length) return toast('ไม่มีข้อมูลให้ออกรายงาน', 1);
+  await makePDF(`
+    <h2>รายงานสรุปการประชุม ปี ${F.year + 543}</h2>
+    <p style="text-align:center;margin:0">
+      ${F.month ? 'เดือน' + TH[+F.month - 1] + ' ' : ''}
+      ${F.sub ? 'ต.' + esc(nm(S.subdistricts, F.sub)) + ' ' : ''}
+      ${F.dist ? 'อ.' + esc(nm(S.districts, F.dist)) + ' ' : ''}
+      ${F.prov ? 'จ.' + esc(nm(S.provinces, F.prov)) : ''}
+    </p>
+    <p>ประชุมทั้งหมด ${T.n} ครั้ง | องค์ประชุมรวม ${T.t} | เข้าร่วม ${T.p} | ไม่เข้าร่วม ${T.t - T.p} | ร้อยละการเข้าร่วม ${pct(T.p, T.t)}</p>
+    <table>
+      <tr><th>วันที่</th><th>ประเภท</th><th>เรื่อง</th><th>พื้นที่</th><th>องค์ประชุม</th><th>เข้าร่วม</th><th>ไม่เข้า</th><th>ร้อยละ</th></tr>
+      ${L.map(m => `<tr>
+        <td>${thDate(m.date)}</td>
+        <td>${esc(nm(S.types, m.typeId))}</td>
+        <td>${esc(m.title)}</td>
+        <td>${esc(area(m))}</td>
+        <td align="center">${m.total}</td>
+        <td align="center">${m.present}</td>
+        <td align="center">${m.absent}</td>
+        <td align="center">${pct(m.present, m.total)}</td>
+      </tr>`).join('')}
+    </table>`, 'รายงานสรุปการประชุม_' + (F.year + 543) + '.pdf', 1);
+});
+
+const expX = safe(async () => {
+  const L = fm();
+  if (!L.length) return toast('ไม่มีข้อมูลให้ออกรายงาน', 1);
+  const wb = XLSX.utils.book_new();
+  const a = [['วันที่', 'ประเภท', 'เรื่อง', 'จังหวัด', 'อำเภอ', 'ตำบล', 'องค์ประชุม', 'เข้าร่วม', 'ไม่เข้าร่วม', 'ร้อยละ']];
+  const b = [['วันที่', 'ตำบล', 'เรื่อง', 'ชื่อ-สกุล', 'ตำแหน่ง', 'การเข้าร่วม']];
+  const c = [['วันที่', 'ตำบล', 'หัวข้อ', 'รายละเอียด']];
+  L.forEach(m => {
+    a.push([
+      thDate(m.date), nm(S.types, m.typeId), m.title,
+      nm(S.provinces, m.provinceId), nm(S.districts, m.districtId), nm(S.subdistricts, m.subdistrictId),
+      m.total, m.present, m.absent, pct(m.present, m.total)
+    ]);
+    m.attendance.forEach(x => b.push([
+      thDate(m.date), nm(S.subdistricts, m.subdistrictId), m.title,
+      x.name, x.position, x.present ? 'เข้าร่วม' : 'ไม่เข้าร่วม'
+    ]));
+    m.topics.forEach(t => c.push([
+      thDate(m.date), nm(S.subdistricts, m.subdistrictId), t.title, t.detail
+    ]));
+  });
+  [['สรุปการประชุม', a], ['รายชื่อผู้เข้าร่วม', b], ['หัวข้อการประชุม', c]]
+    .forEach(x => XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(x[1]), x[0]));
+  XLSX.writeFile(wb, 'รายงานการประชุม_' + (F.year + 543) + '.xlsx');
+});
 </script>
 </body>
 </html>
