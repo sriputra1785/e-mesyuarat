@@ -733,6 +733,67 @@ const H = {
   async listUsers() {
     return un(await sb.from('profiles').select('*').order('email')).map(mapU);
   },
+  async createUser(d) {
+    const email = String(d.username || '').trim().toLowerCase();
+    const password = String(d.password || '');
+    const name = String(d.name || '').trim();
+    if (!email) throw new Error('กรอกอีเมล');
+    if (password.length < 8) throw new Error('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร');
+    if (!d.role) throw new Error('เลือกระดับ');
+    if (!name) throw new Error('กรอกชื่อ-สกุล');
+
+    // เก็บ session ของส่วนกลางไว้ก่อน
+    const { data: { session: adminSession } } = await sb.auth.getSession();
+    if (!adminSession) throw new Error('กรุณาเข้าสู่ระบบใหม่');
+
+    // สร้างบัญชี Auth
+    const { data: su, error: se } = await sb.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: name } }
+    });
+    if (se) {
+      const m = se.message || '';
+      throw new Error(
+        /already registered|already been registered|User already registered/i.test(m)
+          ? 'อีเมลนี้มีในระบบแล้ว'
+          : /password/i.test(m) ? 'รหัสผ่านไม่ผ่านเงื่อนไขความปลอดภัย' : m
+      );
+    }
+    const uid = su?.user?.id;
+    if (!uid) throw new Error('สร้างบัญชีไม่สำเร็จ');
+
+    // คืน session ส่วนกลางทันที (signUp จะสลับ session ไปเป็นผู้ใช้ใหม่)
+    await sb.auth.setSession({
+      access_token: adminSession.access_token,
+      refresh_token: adminSession.refresh_token
+    });
+
+    // บันทึก/อัปเดต profiles ด้วยสิทธิ์ส่วนกลาง
+    const r = d.role;
+    const row = {
+      id: uid,
+      email,
+      full_name: name,
+      role: r,
+      province_id: r === 'province' ? nl(d.provinceId) : null,
+      district_id: r === 'district' ? nl(d.districtId) : null,
+      subdistrict_id: r === 'subdistrict' ? nl(d.subdistrictId) : null,
+      active: d.active !== false
+    };
+    // ลอง upsert ก่อน ถ้าตารางไม่มี unique บน id ให้ fallback เป็น insert/update
+    const { error: pe } = await sb.from('profiles').upsert(row, { onConflict: 'id' });
+    if (pe) {
+      // ถ้า upsert ไม่ได้ ลอง update แล้ว insert
+      const { data: exist } = await sb.from('profiles').select('id').eq('id', uid).maybeSingle();
+      if (exist) {
+        un(await sb.from('profiles').update(row).eq('id', uid));
+      } else {
+        un(await sb.from('profiles').insert(row));
+      }
+    }
+    return 1;
+  },
   async saveUser(d) {
     if (!d.role) throw new Error('เลือกระดับ');
     const r = d.role;
@@ -1271,14 +1332,16 @@ const saveBulk = safe(async () => {
 async function viewUsers() {
   S.users = await api('listUsers');
   $('#view').innerHTML = `
-    <div class="head"><h2>ผู้ใช้งาน</h2></div>
+    <div class="head">
+      <h2>ผู้ใช้งาน</h2>
+      <button class="btn" onclick="openNewUser()">+ เพิ่มผู้ใช้</button>
+    </div>
     <p style="color:var(--mut);font-size:14px;margin:0 0 16px">
-      เพิ่มบัญชีใหม่ที่ Supabase &gt; Authentication &gt; Users แล้วกลับมากำหนดระดับ พื้นที่ และเปิดใช้งานที่นี่
-      (บัญชีใหม่จะเข้าใช้งานไม่ได้จนกว่าจะเปิดใช้งาน)
+      กำหนดสิทธิ์ตามระดับ: <b>ตำบล</b> = ปลัดตำบล · <b>อำเภอ</b> = เลขาอำเภอ · <b>จังหวัด</b> = เลขาจังหวัด · <b>ส่วนกลาง</b> = ผู้ดูแลระบบ
     </p>
     <div class="card tw">
       <table>
-        <tr><th>ชื่อผู้ใช้</th><th>ชื่อ</th><th>ระดับ</th><th>พื้นที่</th><th>สถานะ</th><th></th></tr>
+        <tr><th>อีเมล</th><th>ชื่อ</th><th>ระดับ</th><th>พื้นที่</th><th>สถานะ</th><th></th></tr>
         ${S.users.map(u => `<tr>
           <td>${esc(u.username)}</td>
           <td>${esc(u.name)}</td>
@@ -1296,38 +1359,78 @@ async function viewUsers() {
     </div>`;
 }
 
+function userFormFields(u, isNew) {
+  return `
+    <div class="g2">
+      <label>อีเมล<input id="u_un" type="email" value="${esc(u.username)}" ${isNew ? 'required' : 'disabled'} placeholder="example@email.com"></label>
+      <label>ชื่อ-สกุล<input id="u_nm" value="${esc(u.name)}" required placeholder="ชื่อ นามสกุล"></label>
+      ${isNew ? `<label>รหัสผ่าน (อย่างน้อย 8 ตัว)<input id="u_pw" type="password" required minlength="8" autocomplete="new-password" placeholder="••••••••"></label>` : ''}
+      <label>ระดับ<select id="u_r" onchange="uRole()">${opts(Object.keys(ROLE).map(k => ({ id: k, name: ROLE[k] })), u.role || 'subdistrict', 'เลือก...')}</select></label>
+      <label id="u_pl">จังหวัด<select id="u_p">${opts(S.provinces, u.provinceId, 'เลือก...')}</select></label>
+      <label id="u_dl">อำเภอ<select id="u_d">${opts(S.districts.map(distL), u.districtId, 'เลือก...')}</select></label>
+      <label id="u_sl">ตำบล<select id="u_s">${opts(S.subdistricts.map(subL), u.subdistrictId, 'เลือก...')}</select></label>
+      <label class="chk" style="margin-top:8px">
+        <input type="checkbox" id="u_a" ${u.active !== 'N' ? 'checked' : ''}> เปิดใช้งานบัญชี
+      </label>
+    </div>`;
+}
+
+function openNewUser() {
+  openM(`${mh('เพิ่มผู้ใช้ใหม่')}
+    ${userFormFields({ username: '', name: '', role: 'subdistrict', provinceId: '', districtId: '', subdistrictId: '', active: 'Y' }, true)}
+    <p style="margin-top:8px;font-size:13px;color:var(--mut)">หลังสร้างแล้ว ผู้ใช้สามารถเข้าสู่ระบบด้วยอีเมลและรหัสผ่านที่ตั้งไว้ได้ทันที</p>
+    <p style="margin-top:12px"><button class="btn" onclick="createUser()">สร้างบัญชี</button></p>`);
+  uRole();
+}
+
 function openUser(id) {
   const u = S.users.find(x => x.id === id) || {
     username: '', name: '', role: 'subdistrict',
     provinceId: '', districtId: '', subdistrictId: '', active: 'Y'
   };
-  openM(`${mh('กำหนดสิทธิ์ผู้ใช้')}
-    <div class="g2">
-      <label>อีเมล<input id="u_un" value="${esc(u.username)}" disabled></label>
-      <label>ชื่อ-สกุล<input id="u_nm" value="${esc(u.name)}"></label>
-      <label>ระดับ<select id="u_r" onchange="uRole()">${opts(Object.keys(ROLE).map(k => ({ id: k, name: ROLE[k] })), u.role, 'เลือก...')}</select></label>
-      <label id="u_pl">จังหวัด<select id="u_p">${opts(S.provinces, u.provinceId, 'เลือก...')}</select></label>
-      <label id="u_dl">อำเภอ<select id="u_d">${opts(S.districts.map(distL), u.districtId, 'เลือก...')}</select></label>
-      <label id="u_sl">ตำบล<select id="u_s">${opts(S.subdistricts.map(subL), u.subdistrictId, 'เลือก...')}</select></label>
-      <label class="chk" style="margin-top:8px">
-        <input type="checkbox" id="u_a" ${u.active === 'Y' ? 'checked' : ''}> เปิดใช้งานบัญชี
-      </label>
-    </div>
-    <p style="margin-top:16px"><button class="btn" onclick="saveUser('${id || ''}')">บันทึก</button></p>`);
+  openM(`${mh('แก้ไขสิทธิ์ผู้ใช้')}
+    ${userFormFields(u, false)}
+    <p style="margin-top:16px"><button class="btn" onclick="saveUser('${id}')">บันทึก</button></p>`);
   uRole();
 }
+
 function uRole() {
   const r = $('#u_r').value;
   $('#u_pl').hidden = r !== 'province';
   $('#u_dl').hidden = r !== 'district';
   $('#u_sl').hidden = r !== 'subdistrict';
 }
+
+const createUser = safe(async () => {
+  const role = $('#u_r').value;
+  if (role === 'province' && !$('#u_p').value) return toast('เลือกจังหวัด', 1);
+  if (role === 'district' && !$('#u_d').value) return toast('เลือกอำเภอ', 1);
+  if (role === 'subdistrict' && !$('#u_s').value) return toast('เลือกตำบล', 1);
+  await api('createUser', {
+    username: $('#u_un').value,
+    password: $('#u_pw').value,
+    name: $('#u_nm').value,
+    role,
+    provinceId: $('#u_p').value,
+    districtId: $('#u_d').value,
+    subdistrictId: $('#u_s').value,
+    active: $('#u_a').checked
+  });
+  closeM();
+  toast('สร้างผู้ใช้เรียบร้อย');
+  await redraw();
+});
+
 const saveUser = safe(async id => {
+  const role = $('#u_r').value;
+  if (role === 'province' && !$('#u_p').value) return toast('เลือกจังหวัด', 1);
+  if (role === 'district' && !$('#u_d').value) return toast('เลือกอำเภอ', 1);
+  if (role === 'subdistrict' && !$('#u_s').value) return toast('เลือกตำบล', 1);
   await api('saveUser', {
     id,
     username: $('#u_un').value,
     name: $('#u_nm').value,
-    role: $('#u_r').value,
+    role,
     provinceId: $('#u_p').value,
     districtId: $('#u_d').value,
     subdistrictId: $('#u_s').value,
