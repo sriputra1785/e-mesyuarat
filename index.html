@@ -521,14 +521,15 @@ td.n, th.n { text-align: right; }
       </div>
       <form class="lg" onsubmit="doLogin(event)">
         <h2>เข้าสู่ระบบ</h2>
-        <label>อีเมล
-          <input name="u" type="email" autocomplete="username" required placeholder="you@example.com">
+        <label>รหัสผู้ใช้
+          <input name="u" type="text" autocomplete="username" required placeholder="เช่น padat01" autocapitalize="off" spellcheck="false">
         </label>
         <label>รหัสผ่าน
           <input name="p" type="password" autocomplete="current-password" required placeholder="••••••••">
         </label>
         <div class="err" id="lerr" role="alert"></div>
         <button class="btn" type="submit">เข้าสู่ระบบ</button>
+        <p style="margin:0;font-size:12px;color:var(--mut);text-align:center">รหัสผู้ใช้และรหัสผ่านได้รับจากส่วนกลาง</p>
       </form>
     </div>
   </div>
@@ -664,17 +665,38 @@ const mapM = r => ({
   title: r.title || '', total: r.total, present: r.present, absent: r.absent,
   attendance: r.attendance || [], topics: r.topics || []
 });
+/* รหัสผู้ใช้ → อีเมลภายใน (Supabase ต้องใช้อีเมล) */
+const AUTH_DOMAIN = 'emesy.local';
+const toAuthEmail = u => {
+  const s = String(u || '').trim().toLowerCase();
+  if (!s) return '';
+  if (s.includes('@')) return s; // รองรับอีเมลเดิมของส่วนกลาง
+  return s + '@' + AUTH_DOMAIN;
+};
+const fromAuthEmail = e => {
+  const s = String(e || '');
+  if (s.endsWith('@' + AUTH_DOMAIN)) return s.slice(0, -(AUTH_DOMAIN.length + 1));
+  return s;
+};
+
 const mapU = r => ({
-  id: r.id, username: r.email || '', name: r.full_name || '', role: r.role || '',
-  provinceId: r.province_id || '', districtId: r.district_id || '',
-  subdistrictId: r.subdistrict_id || '', active: r.active ? 'Y' : 'N'
+  id: r.id,
+  username: fromAuthEmail(r.email || ''),
+  name: r.full_name || '',
+  role: r.role || '',
+  provinceId: r.province_id || '',
+  districtId: r.district_id || '',
+  subdistrictId: r.subdistrict_id || '',
+  active: r.active ? 'Y' : 'N'
 });
 
 /* ========== API handlers ========== */
 const H = {
   async login(d) {
+    const email = toAuthEmail(d.username);
+    if (!email) throw new Error('กรอกรหัสผู้ใช้');
     un(await sb.auth.signInWithPassword({
-      email: String(d.username || '').trim(),
+      email,
       password: String(d.password || '')
     }));
     return 1;
@@ -694,8 +716,13 @@ const H = {
     );
     return {
       user: {
-        id: p.id, username: p.email, name: p.full_name || p.email, role: p.role,
-        provinceId: p.province_id || '', districtId: p.district_id || '', subdistrictId: p.subdistrict_id || ''
+        id: p.id,
+        username: fromAuthEmail(p.email),
+        name: p.full_name || fromAuthEmail(p.email),
+        role: p.role,
+        provinceId: p.province_id || '',
+        districtId: p.district_id || '',
+        subdistrictId: p.subdistrict_id || ''
       },
       provinces: un(pv),
       districts: un(ds).map(x => ({ id: x.id, name: x.name, provinceId: x.province_id })),
@@ -734,13 +761,16 @@ const H = {
     return un(await sb.from('profiles').select('*').order('email')).map(mapU);
   },
   async createUser(d) {
-    const email = String(d.username || '').trim().toLowerCase();
+    const code = String(d.username || '').trim().toLowerCase().replace(/\s+/g, '');
     const password = String(d.password || '');
     const name = String(d.name || '').trim();
-    if (!email) throw new Error('กรอกอีเมล');
-    if (password.length < 8) throw new Error('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร');
+    if (!code) throw new Error('กรอกรหัสผู้ใช้');
+    if (!/^[a-z0-9._-]{2,40}$/.test(code)) throw new Error('รหัสผู้ใช้ใช้ได้เฉพาะ a-z 0-9 . _ - (2–40 ตัว)');
+    if (password.length < 6) throw new Error('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
     if (!d.role) throw new Error('เลือกระดับ');
     if (!name) throw new Error('กรอกชื่อ-สกุล');
+
+    const email = toAuthEmail(code);
 
     // เก็บ session ของส่วนกลางไว้ก่อน
     const { data: { session: adminSession } } = await sb.auth.getSession();
@@ -750,26 +780,25 @@ const H = {
     const { data: su, error: se } = await sb.auth.signUp({
       email,
       password,
-      options: { data: { full_name: name } }
+      options: { data: { full_name: name, username: code } }
     });
     if (se) {
       const m = se.message || '';
       throw new Error(
         /already registered|already been registered|User already registered/i.test(m)
-          ? 'อีเมลนี้มีในระบบแล้ว'
+          ? 'รหัสผู้ใช้นี้มีในระบบแล้ว'
           : /password/i.test(m) ? 'รหัสผ่านไม่ผ่านเงื่อนไขความปลอดภัย' : m
       );
     }
     const uid = su?.user?.id;
     if (!uid) throw new Error('สร้างบัญชีไม่สำเร็จ');
 
-    // คืน session ส่วนกลางทันที (signUp จะสลับ session ไปเป็นผู้ใช้ใหม่)
+    // คืน session ส่วนกลางทันที
     await sb.auth.setSession({
       access_token: adminSession.access_token,
       refresh_token: adminSession.refresh_token
     });
 
-    // บันทึก/อัปเดต profiles ด้วยสิทธิ์ส่วนกลาง
     const r = d.role;
     const row = {
       id: uid,
@@ -781,16 +810,11 @@ const H = {
       subdistrict_id: r === 'subdistrict' ? nl(d.subdistrictId) : null,
       active: d.active !== false
     };
-    // ลอง upsert ก่อน ถ้าตารางไม่มี unique บน id ให้ fallback เป็น insert/update
     const { error: pe } = await sb.from('profiles').upsert(row, { onConflict: 'id' });
     if (pe) {
-      // ถ้า upsert ไม่ได้ ลอง update แล้ว insert
       const { data: exist } = await sb.from('profiles').select('id').eq('id', uid).maybeSingle();
-      if (exist) {
-        un(await sb.from('profiles').update(row).eq('id', uid));
-      } else {
-        un(await sb.from('profiles').insert(row));
-      }
+      if (exist) un(await sb.from('profiles').update(row).eq('id', uid));
+      else un(await sb.from('profiles').insert(row));
     }
     return 1;
   },
@@ -1338,10 +1362,11 @@ async function viewUsers() {
     </div>
     <p style="color:var(--mut);font-size:14px;margin:0 0 16px">
       กำหนดสิทธิ์ตามระดับ: <b>ตำบล</b> = ปลัดตำบล · <b>อำเภอ</b> = เลขาอำเภอ · <b>จังหวัด</b> = เลขาจังหวัด · <b>ส่วนกลาง</b> = ผู้ดูแลระบบ
+      <br>ผู้ใช้ล็อกอินด้วย <b>รหัสผู้ใช้ + รหัสผ่าน</b> ที่ส่วนกลางตั้งให้ (ไม่ต้องใช้อีเมล)
     </p>
     <div class="card tw">
       <table>
-        <tr><th>อีเมล</th><th>ชื่อ</th><th>ระดับ</th><th>พื้นที่</th><th>สถานะ</th><th></th></tr>
+        <tr><th>รหัสผู้ใช้</th><th>ชื่อ</th><th>ระดับ</th><th>พื้นที่</th><th>สถานะ</th><th></th></tr>
         ${S.users.map(u => `<tr>
           <td>${esc(u.username)}</td>
           <td>${esc(u.name)}</td>
@@ -1362,9 +1387,15 @@ async function viewUsers() {
 function userFormFields(u, isNew) {
   return `
     <div class="g2">
-      <label>อีเมล<input id="u_un" type="email" value="${esc(u.username)}" ${isNew ? 'required' : 'disabled'} placeholder="example@email.com"></label>
+      <label>รหัสผู้ใช้
+        <input id="u_un" type="text" value="${esc(u.username)}" ${isNew ? 'required' : 'disabled'}
+          placeholder="เช่น padat_bannai" autocapitalize="off" spellcheck="false"
+          pattern="[a-zA-Z0-9._\\-]{2,40}" title="ใช้ a-z 0-9 . _ - เท่านั้น">
+      </label>
       <label>ชื่อ-สกุล<input id="u_nm" value="${esc(u.name)}" required placeholder="ชื่อ นามสกุล"></label>
-      ${isNew ? `<label>รหัสผ่าน (อย่างน้อย 8 ตัว)<input id="u_pw" type="password" required minlength="8" autocomplete="new-password" placeholder="••••••••"></label>` : ''}
+      ${isNew ? `<label>รหัสผ่าน (อย่างน้อย 6 ตัว)
+        <input id="u_pw" type="password" required minlength="6" autocomplete="new-password" placeholder="••••••••">
+      </label>` : ''}
       <label>ระดับ<select id="u_r" onchange="uRole()">${opts(Object.keys(ROLE).map(k => ({ id: k, name: ROLE[k] })), u.role || 'subdistrict', 'เลือก...')}</select></label>
       <label id="u_pl">จังหวัด<select id="u_p">${opts(S.provinces, u.provinceId, 'เลือก...')}</select></label>
       <label id="u_dl">อำเภอ<select id="u_d">${opts(S.districts.map(distL), u.districtId, 'เลือก...')}</select></label>
@@ -1378,7 +1409,10 @@ function userFormFields(u, isNew) {
 function openNewUser() {
   openM(`${mh('เพิ่มผู้ใช้ใหม่')}
     ${userFormFields({ username: '', name: '', role: 'subdistrict', provinceId: '', districtId: '', subdistrictId: '', active: 'Y' }, true)}
-    <p style="margin-top:8px;font-size:13px;color:var(--mut)">หลังสร้างแล้ว ผู้ใช้สามารถเข้าสู่ระบบด้วยอีเมลและรหัสผ่านที่ตั้งไว้ได้ทันที</p>
+    <p style="margin-top:8px;font-size:13px;color:var(--mut)">
+      ตั้ง <b>รหัสผู้ใช้</b> ให้ง่ายต่อการจำ เช่น <code>padat01</code> หรือ <code>sekha_a1</code>
+      แล้วแจ้งรหัสผู้ใช้ + รหัสผ่านให้ผู้ใช้คนนั้น
+    </p>
     <p style="margin-top:12px"><button class="btn" onclick="createUser()">สร้างบัญชี</button></p>`);
   uRole();
 }
