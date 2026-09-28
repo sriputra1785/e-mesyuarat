@@ -112,8 +112,8 @@ td.n,th.n{text-align:right}.empty{padding:24px;text-align:center;color:var(--mut
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-const SB_URL='https://YOUR-PROJECT-REF.supabase.co';   // Project URL
-const SB_KEY='YOUR-PUBLISHABLE-OR-ANON-KEY';           // publishable / anon key เท่านั้น (ห้ามใส่ service_role)
+const SB_URL='https://ngphafjtptdmakzmxcgw.supabase.co';   // Project URL
+const SB_KEY='sb_publishable_O53vYGQrygl3mAIfpt2PgQ_jl-m__hu';           // publishable / anon key เท่านั้น (ห้ามใส่ service_role)
 const IDLE=30*60*1000;
 const TH=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 const THS=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
