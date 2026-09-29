@@ -46,22 +46,32 @@ async function boot() {
   go('dash');
 }
 
-function doLogout(auto, msg) {
-  sb.auth.signOut().catch(() => {});
+async function doLogout(auto, msg) {
   S.user = null;
   S.meetings = [];
   S.users = [];
   S.members = [];
   S.my = null;
   if (typeof closeM === 'function') closeM();
-  // แยกหน้า: กลับไปหน้า login
+  // รอ signOut เสร็จก่อน ไม่งั้นหน้า login จะเห็น session เก่าแล้วเด้งกลับ app
+  try {
+    await sb.auth.signOut({ scope: 'local' });
+  } catch (_) {}
+  try {
+    Object.keys(sessionStorage).forEach(k => {
+      if (/supabase|sb-|auth/i.test(k)) sessionStorage.removeItem(k);
+    });
+  } catch (_) {}
+
   if (!document.getElementById('landing')) {
     const q = auto ? ('?msg=' + encodeURIComponent(msg || 'ออกจากระบบอัตโนมัติ เนื่องจากไม่มีการใช้งานเกิน 30 นาที')) : '';
-    location.href = 'index.html' + q;
+    location.replace('index.html' + q);
     return;
   }
-  $('#app').hidden = true;
-  $('#landing').hidden = false;
+  const app = document.getElementById('app');
+  const landing = document.getElementById('landing');
+  if (app) app.hidden = true;
+  if (landing) landing.hidden = false;
   if ($('#view')) $('#view').innerHTML = '';
   if ($('#lerr')) $('#lerr').textContent = auto ? (msg || 'ออกจากระบบอัตโนมัติ เนื่องจากไม่มีการใช้งานเกิน 30 นาที') : '';
   scrollTo(0, 0);
@@ -115,17 +125,29 @@ setInterval(() => {
 document.addEventListener('visibilitychange', () => {
   if (S.user && Date.now() - last > IDLE) doLogout(1);
 });
-sb.auth.getSession().then(r => {
-  if (!r.data.session) {
-    if (document.getElementById('app') && !document.getElementById('landing')) {
-      location.href = 'index.html';
-    }
+sb.auth.getSession().then(async r => {
+  const sess = r.data.session;
+  const onApp = document.getElementById('app') && !document.getElementById('landing');
+  const onLogin = !!document.getElementById('landing');
+  if (!sess) {
+    if (onApp) location.replace('index.html');
     return;
   }
-  // มี session: ถ้าอยู่หน้า app ให้ boot, ถ้าอยู่หน้า login ให้ไป app
-  if (document.getElementById('app') && !document.getElementById('landing')) {
-    boot().catch(() => { location.href = 'index.html'; });
-  } else if (document.getElementById('landing')) {
-    location.href = 'app.html';
+  // ตรวจ session กับเซิร์ฟเวอร์อีกครั้ง กัน token ค้าง
+  try {
+    const { data, error } = await sb.auth.getUser();
+    if (error || !data.user) {
+      await sb.auth.signOut({ scope: 'local' }).catch(() => {});
+      if (onApp) location.replace('index.html');
+      return;
+    }
+  } catch (_) {
+    if (onApp) location.replace('index.html');
+    return;
+  }
+  if (onApp) {
+    boot().catch(() => { location.replace('index.html'); });
+  } else if (onLogin) {
+    location.replace('app.html');
   }
 });
