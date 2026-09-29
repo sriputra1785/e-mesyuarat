@@ -21,29 +21,93 @@ const setF = safe(async (k, v) => {
   if (k === 'year') F.year = +v;
   await redraw();
 });
-const fm = () => S.meetings.filter(m =>
-  (!F.prov || m.provinceId === F.prov) &&
-  (!F.dist || m.districtId === F.dist) &&
-  (!F.sub  || m.subdistrictId === F.sub) &&
-  (!F.type || m.typeId === F.type) &&
-  (!F.month || m.date.slice(5, 7) === F.month)
-);
+
+/* ขอบเขตพื้นที่ตาม role ของผู้ใช้ */
+function myScope() {
+  const u = S.user || {};
+  if (u.role === 'subdistrict' && u.subdistrictId) {
+    const s = S.subdistricts.find(x => x.id === u.subdistrictId);
+    const d = s ? S.districts.find(x => x.id === s.districtId) : null;
+    return {
+      provinces: d ? S.provinces.filter(p => p.id === d.provinceId) : [],
+      districts: d ? S.districts.filter(x => x.id === d.id) : [],
+      subdistricts: S.subdistricts.filter(x => x.id === u.subdistrictId),
+      lockProv: d ? d.provinceId : '',
+      lockDist: d ? d.id : '',
+      lockSub: u.subdistrictId
+    };
+  }
+  if (u.role === 'district' && u.districtId) {
+    const d = S.districts.find(x => x.id === u.districtId);
+    return {
+      provinces: d ? S.provinces.filter(p => p.id === d.provinceId) : [],
+      districts: S.districts.filter(x => x.id === u.districtId),
+      subdistricts: S.subdistricts.filter(x => x.districtId === u.districtId),
+      lockProv: d ? d.provinceId : '',
+      lockDist: u.districtId,
+      lockSub: ''
+    };
+  }
+  if (u.role === 'province' && u.provinceId) {
+    return {
+      provinces: S.provinces.filter(p => p.id === u.provinceId),
+      districts: S.districts.filter(x => x.provinceId === u.provinceId),
+      subdistricts: S.subdistricts.filter(s => {
+        const d = S.districts.find(x => x.id === s.districtId);
+        return d && d.provinceId === u.provinceId;
+      }),
+      lockProv: u.provinceId,
+      lockDist: '',
+      lockSub: ''
+    };
+  }
+  // central
+  return {
+    provinces: S.provinces,
+    districts: S.districts,
+    subdistricts: S.subdistricts,
+    lockProv: '',
+    lockDist: '',
+    lockSub: ''
+  };
+}
+
+function applyScopeFilters() {
+  const sc = myScope();
+  if (sc.lockSub) { F.sub = sc.lockSub; F.dist = sc.lockDist; F.prov = sc.lockProv; }
+  else if (sc.lockDist) { F.dist = sc.lockDist; F.prov = sc.lockProv; if (F.sub && !sc.subdistricts.some(s => s.id === F.sub)) F.sub = ''; }
+  else if (sc.lockProv) { F.prov = sc.lockProv; if (F.dist && !sc.districts.some(d => d.id === F.dist)) { F.dist = ''; F.sub = ''; } }
+}
+
+const fm = () => {
+  applyScopeFilters();
+  return S.meetings.filter(m =>
+    (!F.prov || m.provinceId === F.prov) &&
+    (!F.dist || m.districtId === F.dist) &&
+    (!F.sub  || m.subdistrictId === F.sub) &&
+    (!F.type || m.typeId === F.type) &&
+    (!F.month || m.date.slice(5, 7) === F.month)
+  );
+};
 
 function filterBar(mon) {
+  applyScopeFilters();
+  const sc = myScope();
   const y = new Date().getFullYear(), ys = [];
   for (let i = y + 1; i >= y - 5; i--) ys.push({ id: String(i), name: String(i + 543) });
-  const ds = S.districts.filter(d => !F.prov || d.provinceId === F.prov).map(distL);
-  const ss = S.subdistricts.filter(s =>
+  const ds = sc.districts.filter(d => !F.prov || d.provinceId === F.prov).map(distL);
+  const ss = sc.subdistricts.filter(s =>
     (!F.dist || s.districtId === F.dist) &&
     (!F.prov || (S.districts.find(d => d.id === s.districtId) || {}).provinceId === F.prov)
   ).map(subL);
   const ms = TH.map((n, i) => ({ id: String(i + 1).padStart(2, '0'), name: n }));
+  const lockP = !!sc.lockProv, lockD = !!sc.lockDist, lockS = !!sc.lockSub;
   return `<div class="card fl">
     <label>ปี (พ.ศ.)<select onchange="setF('year',this.value)">${opts(ys, String(F.year))}</select></label>
     ${mon ? `<label>เดือน<select onchange="setF('month',this.value)">${opts(ms, F.month, 'ทุกเดือน')}</select></label>` : ''}
-    <label>จังหวัด<select onchange="setF('prov',this.value)">${opts(S.provinces, F.prov, 'ทั้งหมด')}</select></label>
-    <label>อำเภอ<select onchange="setF('dist',this.value)">${opts(ds, F.dist, 'ทั้งหมด')}</select></label>
-    <label>ตำบล<select onchange="setF('sub',this.value)">${opts(ss, F.sub, 'ทั้งหมด')}</select></label>
+    <label>จังหวัด<select onchange="setF('prov',this.value)" ${lockP ? 'disabled' : ''}>${opts(sc.provinces, F.prov, lockP ? undefined : 'ทั้งหมด')}</select></label>
+    <label>อำเภอ<select onchange="setF('dist',this.value)" ${lockD ? 'disabled' : ''}>${opts(ds, F.dist, lockD ? undefined : 'ทั้งหมด')}</select></label>
+    <label>ตำบล<select onchange="setF('sub',this.value)" ${lockS ? 'disabled' : ''}>${opts(ss, F.sub, lockS ? undefined : 'ทั้งหมด')}</select></label>
     <label>ประเภท<select onchange="setF('type',this.value)">${opts(S.types, F.type, 'ทั้งหมด')}</select></label>
   </div>`;
 }
@@ -155,8 +219,19 @@ let FM = { id: '', att: [], topics: [], ro: false };
 const openMeeting = safe(async id => {
   const m = id ? S.meetings.find(x => x.id === id) : null;
   const ro = m ? !canEd(m) : false;
-  const eSubs = S.user.role === 'province' ? [] : S.subdistricts;
+  // จำกัดตำบลตามสิทธิ์ผู้ใช้
+  const eSubs = S.user.role === 'province' ? [] : myScope().subdistricts;
   if (!m && !eSubs.length) return toast('ยังไม่มีตำบลในความรับผิดชอบ กรุณาติดต่อส่วนกลาง', 1);
+  // ห้ามเปิดดูการประชุมนอกเขต (นอกจากส่วนกลาง)
+  if (m && S.user.role !== 'central' && !canEd(m) && S.user.role !== 'province') {
+    // province ดูได้อย่างเดียว; อื่นนอกเขตไม่ให้เปิด
+  }
+  if (m && S.user.role === 'subdistrict' && m.subdistrictId !== S.user.subdistrictId) {
+    return toast('ไม่มีสิทธิ์ดูการประชุมนอกตำบลของท่าน', 1);
+  }
+  if (m && S.user.role === 'district' && m.districtId !== S.user.districtId) {
+    return toast('ไม่มีสิทธิ์ดูการประชุมนอกอำเภอของท่าน', 1);
+  }
 
   FM = {
     id: m ? m.id : '',
@@ -264,10 +339,13 @@ const saveMeeting = safe(async () => {
 const M = { sub: '' };
 
 async function viewMem() {
-  const subs = S.subdistricts;
-  if (!subs.find(s => s.id === M.sub)) M.sub = subs[0] ? subs[0].id : '';
+  const sc = myScope();
+  const subs = sc.subdistricts;
+  if (sc.lockSub) M.sub = sc.lockSub;
+  else if (!subs.find(s => s.id === M.sub)) M.sub = subs[0] ? subs[0].id : '';
   S.members = M.sub ? await api('listMembers', { subdistrictId: M.sub }) : [];
   const ed = S.user.role !== 'province';
+  const lockSub = !!sc.lockSub;
   $('#view').innerHTML = `
     <div class="head">
       <h2>องค์ประชุม</h2>
@@ -277,7 +355,8 @@ async function viewMem() {
       </div>` : ''}
     </div>
     <div class="card">
-      <label>ตำบล<select onchange="M.sub=this.value;redraw()">${opts(subs.map(subL), M.sub)}</select></label>
+      <label>ตำบล<select onchange="M.sub=this.value;redraw()" ${lockSub ? 'disabled' : ''}>${opts(subs.map(subL), M.sub)}</select></label>
+      ${lockSub ? '<p style="margin:8px 0 0;font-size:13px;color:var(--mut)">แสดงเฉพาะตำบลในความรับผิดชอบของท่าน</p>' : ''}
     </div>
     <div class="card tw">
       ${S.members.length ? `
