@@ -166,21 +166,21 @@ function viewDash() {
 }
 
 /* ========== Meetings ========== */
+/* บันทึก/แก้ไขการประชุม = เฉพาะระดับตำบล (ปลัด) ในตำบลของตน */
 const canEd = m => {
   const u = S.user;
-  return u.role === 'central' ||
-    (u.role === 'province' && m.provinceId === u.provinceId) ||
-    (u.role === 'district' && m.districtId === u.districtId) ||
-    (u.role === 'subdistrict' && m.subdistrictId === u.subdistrictId);
+  return u.role === 'subdistrict' && m.subdistrictId === u.subdistrictId;
 };
+const canRecord = () => S.user && S.user.role === 'subdistrict' && !!S.user.subdistrictId;
 
 function viewMeet() {
-  const L = fm(), ed = true;
+  const L = fm(), ed = canRecord();
   $('#view').innerHTML = `
     <div class="head">
       <h2>การประชุม</h2>
       <div>${ed ? '<button class="btn" onclick="openMeeting()">+ เพิ่มการประชุม</button> ' : ''}${btns}</div>
     </div>
+    ${!ed ? '<p style="color:var(--mut);font-size:14px;margin:0 0 12px">ระดับอำเภอ / จังหวัด / ส่วนกลาง ดูสรุปและออกรายงานได้ — การบันทึกทำโดยผู้ใช้ระดับตำบล</p>' : ''}
     ${filterBar(1)}
     <div class="card tw">
       ${L.length ? `
@@ -219,13 +219,13 @@ let FM = { id: '', att: [], topics: [], ro: false };
 
 const openMeeting = safe(async id => {
   const m = id ? S.meetings.find(x => x.id === id) : null;
+  // เพิ่มใหม่ได้เฉพาะระดับตำบล
+  if (!m && !canRecord()) {
+    return toast('การบันทึกการประชุมทำโดยผู้ใช้ระดับตำบลเท่านั้น', 1);
+  }
   const ro = m ? !canEd(m) : false;
-  // จำกัดตำบลตามสิทธิ์ผู้ใช้
   const eSubs = myScope().subdistricts;
   if (!m && !eSubs.length) return toast('ยังไม่มีตำบลในความรับผิดชอบ กรุณาติดต่อส่วนกลาง', 1);
-  if (m && !canEd(m) && S.user.role !== 'central') {
-    return toast('ไม่มีสิทธิ์ดูการประชุมนอกพื้นที่ของท่าน', 1);
-  }
 
   FM = {
     id: m ? m.id : '',
@@ -233,15 +233,22 @@ const openMeeting = safe(async id => {
     att: m ? m.attendance.map(a => ({ ...a })) : [],
     topics: m ? m.topics.map(t => ({ ...t })) : [{ title: '', detail: '' }]
   };
-  const subs = (ro ? S.subdistricts : eSubs).map(subL);
-  const sel = m ? m.subdistrictId : (subs.length === 1 ? subs[0].id : '');
+  // ระดับตำบล: ล็อกตำบลของตน ไม่ต้องเลือก
+  const lockedSub = S.user.role === 'subdistrict' ? S.user.subdistrictId : '';
+  const sel = m ? m.subdistrictId : (lockedSub || (eSubs[0] ? eSubs[0].id : ''));
   const d = ro ? 'disabled' : '';
+  const subName = nm(S.subdistricts, sel) || '-';
 
   openM(`${mh(m ? (ro ? 'รายละเอียดการประชุม' : 'แก้ไขการประชุม') : 'เพิ่มการประชุม')}
     <div class="g2">
       <label>วันที่ประชุม<input type="date" id="f_date" value="${m ? m.date : new Date().toISOString().slice(0, 10)}" ${d}></label>
       <label>ประเภทการประชุม<select id="f_type" ${d}>${opts(S.types, m ? m.typeId : '', 'เลือก...')}</select></label>
-      <label>ตำบล<select id="f_sub" onchange="subChange()" ${d}>${opts(subs, sel, 'เลือก...')}</select></label>
+      ${lockedSub || (ro && sel) ? `
+        <label>ตำบล
+          <input type="text" value="${esc(subName)}" disabled>
+          <input type="hidden" id="f_sub" value="${esc(sel)}">
+        </label>` : `
+        <label>ตำบล<select id="f_sub" onchange="subChange()" ${d}>${opts(eSubs.map(subL), sel, 'เลือก...')}</select></label>`}
       <label>เรื่อง / ชื่อการประชุม<input id="f_title" maxlength="300" value="${esc(m ? m.title : '')}" ${d}></label>
     </div>
     <div class="head" style="margin-top:18px">
@@ -338,7 +345,8 @@ async function viewMem() {
   if (sc.lockSub) M.sub = sc.lockSub;
   else if (!subs.find(s => s.id === M.sub)) M.sub = subs[0] ? subs[0].id : '';
   S.members = M.sub ? await api('listMembers', { subdistrictId: M.sub }) : [];
-  const ed = true;
+  // แก้รายชื่อองค์ประชุมได้เฉพาะระดับตำบล (ในตำบลตน) หรือส่วนกลาง
+  const ed = (S.user.role === 'subdistrict' && M.sub === S.user.subdistrictId) || S.user.role === 'central';
   const lockSub = !!sc.lockSub;
   $('#view').innerHTML = `
     <div class="head">
@@ -351,6 +359,7 @@ async function viewMem() {
     <div class="card">
       <label>ตำบล<select onchange="M.sub=this.value;redraw()" ${lockSub ? 'disabled' : ''}>${opts(subs.map(subL), M.sub)}</select></label>
       ${lockSub ? '<p style="margin:8px 0 0;font-size:13px;color:var(--mut)">แสดงเฉพาะตำบลในความรับผิดชอบของท่าน</p>' : ''}
+      ${S.user.role !== 'subdistrict' && S.user.role !== 'central' ? '<p style="margin:8px 0 0;font-size:13px;color:var(--mut)">การเพิ่ม/แก้รายชื่อองค์ประชุมทำโดยผู้ใช้ระดับตำบล</p>' : ''}
     </div>
     <div class="card tw">
       ${S.members.length ? `
