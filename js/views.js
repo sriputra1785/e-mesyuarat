@@ -169,12 +169,13 @@ function viewDash() {
 const canEd = m => {
   const u = S.user;
   return u.role === 'central' ||
+    (u.role === 'province' && m.provinceId === u.provinceId) ||
     (u.role === 'district' && m.districtId === u.districtId) ||
     (u.role === 'subdistrict' && m.subdistrictId === u.subdistrictId);
 };
 
 function viewMeet() {
-  const L = fm(), ed = S.user.role !== 'province';
+  const L = fm(), ed = true;
   $('#view').innerHTML = `
     <div class="head">
       <h2>การประชุม</h2>
@@ -220,17 +221,10 @@ const openMeeting = safe(async id => {
   const m = id ? S.meetings.find(x => x.id === id) : null;
   const ro = m ? !canEd(m) : false;
   // จำกัดตำบลตามสิทธิ์ผู้ใช้
-  const eSubs = S.user.role === 'province' ? [] : myScope().subdistricts;
+  const eSubs = myScope().subdistricts;
   if (!m && !eSubs.length) return toast('ยังไม่มีตำบลในความรับผิดชอบ กรุณาติดต่อส่วนกลาง', 1);
-  // ห้ามเปิดดูการประชุมนอกเขต (นอกจากส่วนกลาง)
-  if (m && S.user.role !== 'central' && !canEd(m) && S.user.role !== 'province') {
-    // province ดูได้อย่างเดียว; อื่นนอกเขตไม่ให้เปิด
-  }
-  if (m && S.user.role === 'subdistrict' && m.subdistrictId !== S.user.subdistrictId) {
-    return toast('ไม่มีสิทธิ์ดูการประชุมนอกตำบลของท่าน', 1);
-  }
-  if (m && S.user.role === 'district' && m.districtId !== S.user.districtId) {
-    return toast('ไม่มีสิทธิ์ดูการประชุมนอกอำเภอของท่าน', 1);
+  if (m && !canEd(m) && S.user.role !== 'central') {
+    return toast('ไม่มีสิทธิ์ดูการประชุมนอกพื้นที่ของท่าน', 1);
   }
 
   FM = {
@@ -344,7 +338,7 @@ async function viewMem() {
   if (sc.lockSub) M.sub = sc.lockSub;
   else if (!subs.find(s => s.id === M.sub)) M.sub = subs[0] ? subs[0].id : '';
   S.members = M.sub ? await api('listMembers', { subdistrictId: M.sub }) : [];
-  const ed = S.user.role !== 'province';
+  const ed = true;
   const lockSub = !!sc.lockSub;
   $('#view').innerHTML = `
     <div class="head">

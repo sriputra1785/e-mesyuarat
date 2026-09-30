@@ -317,10 +317,19 @@ const H = {
     return out.map(mapM);
   },
   async saveMeeting(d) {
+    const sid = d.subdistrictId;
+    if (!sid) throw new Error('เลือกตำบล');
+    // เติม district_id / province_id จากตำบล (สำคัญต่อ RLS ของอำเภอ/จังหวัด)
+    const sub = (typeof S !== 'undefined' ? S.subdistricts : []).find(x => x.id === sid);
+    const distId = sub ? sub.districtId : (d.districtId || null);
+    const dist = (typeof S !== 'undefined' ? S.districts : []).find(x => x.id === distId);
+    const provId = dist ? dist.provinceId : (d.provinceId || null);
     const row = {
       meeting_date: d.date,
       type_id: d.typeId,
-      subdistrict_id: d.subdistrictId,
+      subdistrict_id: sid,
+      district_id: distId || null,
+      province_id: provId || null,
       title: String(d.title || '').slice(0, 300),
       attendance: (d.attendance || []).map(a => ({
         id: a.id, name: a.name, position: a.position, present: !!a.present
@@ -331,6 +340,10 @@ const H = {
       }))
     };
     if (!row.attendance.length) throw new Error('ไม่มีรายชื่อองค์ประชุม');
+    // คำนวณจำนวน (กรณีไม่มี generated column / trigger)
+    row.total = row.attendance.length;
+    row.present = row.attendance.filter(a => a.present).length;
+    row.absent = row.total - row.present;
     un(await (d.id ? sb.from('meetings').update(row).eq('id', d.id) : sb.from('meetings').insert(row)));
     return 1;
   },
