@@ -166,12 +166,38 @@ function viewDash() {
 }
 
 /* ========== Meetings ========== */
-/* บันทึก/แก้ไขการประชุม = เฉพาะระดับตำบล (ปลัด) ในตำบลของตน */
+/* ตำบลบันทึกระดับตำบล · อำเภอบันทึกระดับอำเภอ · จังหวัดบันทึก/ดูในจังหวัด · ส่วนกลางทั้งหมด */
 const canEd = m => {
   const u = S.user;
-  return u.role === 'subdistrict' && m.subdistrictId === u.subdistrictId;
+  if (!u || !m) return false;
+  // แก้ได้เฉพาะการประชุมที่ระดับตัวเองบันทึก (จังหวัดดูของอำเภอได้ แต่ไม่แก้แทน)
+  if (u.role === 'central') return true;
+  if (u.role === 'province') return m.provinceId === u.provinceId && !m.districtId && !m.subdistrictId;
+  if (u.role === 'district') return m.districtId === u.districtId && !m.subdistrictId;
+  if (u.role === 'subdistrict') return m.subdistrictId === u.subdistrictId;
+  return false;
 };
-const canRecord = () => S.user && S.user.role === 'subdistrict' && !!S.user.subdistrictId;
+const canRecord = () => {
+  const u = S.user;
+  if (!u) return false;
+  if (u.role === 'central') return true;
+  if (u.role === 'province') return !!u.provinceId;
+  if (u.role === 'district') return !!u.districtId;
+  if (u.role === 'subdistrict') return !!u.subdistrictId;
+  return false;
+};
+const meetAreaLabel = m => {
+  if (m.subdistrictId) {
+    return `ต.${nm(S.subdistricts, m.subdistrictId)}<br><small style="color:var(--mut)">อ.${esc(nm(S.districts, m.districtId))}</small>`;
+  }
+  if (m.districtId) {
+    return `อ.${nm(S.districts, m.districtId)}<br><small style="color:var(--mut)">จ.${esc(nm(S.provinces, m.provinceId))} · ระดับอำเภอ</small>`;
+  }
+  if (m.provinceId) {
+    return `จ.${nm(S.provinces, m.provinceId)}<br><small style="color:var(--mut)">ระดับจังหวัด</small>`;
+  }
+  return 'ส่วนกลาง';
+};
 
 function viewMeet() {
   const L = fm(), ed = canRecord();
@@ -180,7 +206,12 @@ function viewMeet() {
       <h2>การประชุม</h2>
       <div>${ed ? '<button class="btn" onclick="openMeeting()">+ เพิ่มการประชุม</button> ' : ''}${btns}</div>
     </div>
-    ${!ed ? '<p style="color:var(--mut);font-size:14px;margin:0 0 12px">ระดับอำเภอ / จังหวัด / ส่วนกลาง ดูสรุปและออกรายงานได้ — การบันทึกทำโดยผู้ใช้ระดับตำบล</p>' : ''}
+    <p style="color:var(--mut);font-size:14px;margin:0 0 12px">
+      ${S.user.role === 'subdistrict' ? 'บันทึกการประชุมระดับตำบล (ตำบลของท่าน)' :
+        S.user.role === 'district' ? 'บันทึกการประชุมระดับอำเภอ — จังหวัดสามารถดูข้อมูลอำเภอในกำกับได้' :
+        S.user.role === 'province' ? 'บันทึกการประชุมระดับจังหวัด และดูการประชุมอำเภอ/ตำบลในจังหวัด' :
+        'ส่วนกลางเห็นและจัดการได้ทั้งหมด'}
+    </p>
     ${filterBar(1)}
     <div class="card tw">
       ${L.length ? `
@@ -189,7 +220,7 @@ function viewMeet() {
           ${L.map(m => `<tr>
             <td>${thDate(m.date)}</td>
             <td>${esc(nm(S.types, m.typeId))}<br><small style="color:var(--mut)">${esc(m.title)}</small></td>
-            <td>${esc(nm(S.subdistricts, m.subdistrictId))}<br><small style="color:var(--mut)">อ.${esc(nm(S.districts, m.districtId))}</small></td>
+            <td>${meetAreaLabel(m)}</td>
             <td class="n">${m.total}</td><td class="n">${m.present}</td><td class="n">${m.absent}</td>
             <td style="white-space:nowrap">
               <button class="btn sec sm" onclick="mPDF('${m.id}')">PDF</button>
@@ -219,13 +250,11 @@ let FM = { id: '', att: [], topics: [], ro: false };
 
 const openMeeting = safe(async id => {
   const m = id ? S.meetings.find(x => x.id === id) : null;
-  // เพิ่มใหม่ได้เฉพาะระดับตำบล
   if (!m && !canRecord()) {
-    return toast('การบันทึกการประชุมทำโดยผู้ใช้ระดับตำบลเท่านั้น', 1);
+    return toast('ไม่มีสิทธิ์บันทึกการประชุม', 1);
   }
   const ro = m ? !canEd(m) : false;
-  const eSubs = myScope().subdistricts;
-  if (!m && !eSubs.length) return toast('ยังไม่มีตำบลในความรับผิดชอบ กรุณาติดต่อส่วนกลาง', 1);
+  const role = S.user.role;
 
   FM = {
     id: m ? m.id : '',
@@ -233,22 +262,47 @@ const openMeeting = safe(async id => {
     att: m ? m.attendance.map(a => ({ ...a })) : [],
     topics: m ? m.topics.map(t => ({ ...t })) : [{ title: '', detail: '' }]
   };
-  // ระดับตำบล: ล็อกตำบลของตน ไม่ต้องเลือก
-  const lockedSub = S.user.role === 'subdistrict' ? S.user.subdistrictId : '';
-  const sel = m ? m.subdistrictId : (lockedSub || (eSubs[0] ? eSubs[0].id : ''));
+
+  // พื้นที่ตามระดับ — ไม่ให้ อำเภอ/จังหวัด/ส่วนกลาง เลือกตำบล
+  let areaHtml = '';
+  let selSub = '';
+  if (role === 'subdistrict') {
+    selSub = m ? m.subdistrictId : S.user.subdistrictId;
+    areaHtml = `<label>ตำบล
+      <input type="text" value="${esc(nm(S.subdistricts, selSub))}" disabled>
+      <input type="hidden" id="f_sub" value="${esc(selSub)}">
+    </label>`;
+  } else if (role === 'district') {
+    const did = m ? m.districtId : S.user.districtId;
+    areaHtml = `<label>อำเภอ
+      <input type="text" value="${esc(nm(S.districts, did))} (ระดับอำเภอ)" disabled>
+      <input type="hidden" id="f_dist" value="${esc(did)}">
+    </label>`;
+  } else if (role === 'province') {
+    const pid = m ? m.provinceId : S.user.provinceId;
+    areaHtml = `<label>จังหวัด
+      <input type="text" value="${esc(nm(S.provinces, pid))} (ระดับจังหวัด)" disabled>
+      <input type="hidden" id="f_prov" value="${esc(pid)}">
+    </label>`;
+  } else {
+    // ส่วนกลาง — เลือกระดับการบันทึก
+    areaHtml = `<label>ระดับการบันทึก
+      <select id="f_level" onchange="centralLevelChange()" ${ro ? 'disabled' : ''}>
+        <option value="central" ${!m || (!m.provinceId && !m.districtId && !m.subdistrictId) ? 'selected' : ''}>ส่วนกลาง</option>
+        <option value="province" ${m && m.provinceId && !m.districtId && !m.subdistrictId ? 'selected' : ''}>จังหวัด</option>
+        <option value="district" ${m && m.districtId && !m.subdistrictId ? 'selected' : ''}>อำเภอ</option>
+        <option value="subdistrict" ${m && m.subdistrictId ? 'selected' : ''}>ตำบล</option>
+      </select>
+    </label>
+    <div id="f_central_area"></div>`;
+  }
   const d = ro ? 'disabled' : '';
-  const subName = nm(S.subdistricts, sel) || '-';
 
   openM(`${mh(m ? (ro ? 'รายละเอียดการประชุม' : 'แก้ไขการประชุม') : 'เพิ่มการประชุม')}
     <div class="g2">
       <label>วันที่ประชุม<input type="date" id="f_date" value="${m ? m.date : new Date().toISOString().slice(0, 10)}" ${d}></label>
       <label>ประเภทการประชุม<select id="f_type" ${d}>${opts(S.types, m ? m.typeId : '', 'เลือก...')}</select></label>
-      ${lockedSub || (ro && sel) ? `
-        <label>ตำบล
-          <input type="text" value="${esc(subName)}" disabled>
-          <input type="hidden" id="f_sub" value="${esc(sel)}">
-        </label>` : `
-        <label>ตำบล<select id="f_sub" onchange="subChange()" ${d}>${opts(eSubs.map(subL), sel, 'เลือก...')}</select></label>`}
+      ${areaHtml}
       <label>เรื่อง / ชื่อการประชุม<input id="f_title" maxlength="300" value="${esc(m ? m.title : '')}" ${d}></label>
     </div>
     <div class="head" style="margin-top:18px">
@@ -268,8 +322,25 @@ const openMeeting = safe(async id => {
     ${ro ? '' : '<button class="btn" style="margin-top:8px" onclick="saveMeeting()">บันทึกการประชุม</button>'}`);
   renderTopics();
   renderAtt();
-  if (!m && sel) await syncMem();
+  if (role === 'central') centralLevelChange(m);
+  if (!m && !ro) await syncMem();
 });
+
+function centralLevelChange(m) {
+  const lv = ($('#f_level') && $('#f_level').value) || 'central';
+  const box = $('#f_central_area');
+  if (!box) return;
+  const ro = FM.ro ? 'disabled' : '';
+  if (lv === 'central') {
+    box.innerHTML = '';
+  } else if (lv === 'province') {
+    box.innerHTML = `<label>จังหวัด<select id="f_prov" ${ro}>${opts(S.provinces, m ? m.provinceId : '', 'เลือก...')}</select></label>`;
+  } else if (lv === 'district') {
+    box.innerHTML = `<label>อำเภอ<select id="f_dist" ${ro}>${opts(S.districts.map(distL), m ? m.districtId : '', 'เลือก...')}</select></label>`;
+  } else {
+    box.innerHTML = `<label>ตำบล<select id="f_sub" onchange="subChange()" ${ro}>${opts(S.subdistricts.map(subL), m ? m.subdistrictId : '', 'เลือก...')}</select></label>`;
+  }
+}
 
 function renderTopics() {
   $('#f_topics').innerHTML = FM.topics.map((t, i) => `
@@ -295,43 +366,87 @@ function renderAtt() {
         <input type="checkbox" ${a.present ? 'checked' : ''} ${FM.ro ? 'disabled' : ''} onchange="tick(${i},this.checked)">
         ${esc(a.name)} <small>${esc(a.position)}</small>
       </label>`).join('')
-    : '<div class="empty" style="grid-column:1/-1">เลือกตำบลเพื่อโหลดรายชื่อองค์ประชุม</div>';
+    : `<div class="empty" style="grid-column:1/-1">${
+        S.user.role === 'subdistrict' ? 'กด "โหลดรายชื่อล่าสุด" เพื่อดึงองค์ประชุม' :
+        S.user.role === 'district' ? 'กด "โหลดรายชื่อล่าสุด" เพื่อดึงองค์ประชุมทุกตำบลในอำเภอ' :
+        'ระดับจังหวัด/ส่วนกลาง อาจไม่มีรายชื่อองค์ประชุม — บันทึกหัวข้อได้อย่างเดียวได้'
+      }</div>`;
   cnt();
 }
 function cnt() {
   const p = FM.att.filter(a => a.present).length;
-  $('#cnt').textContent = `ทั้งหมด ${FM.att.length} | เข้าร่วม ${p} | ไม่เข้าร่วม ${FM.att.length - p}`;
+  const el = $('#cnt');
+  if (el) el.textContent = `ทั้งหมด ${FM.att.length} | เข้าร่วม ${p} | ไม่เข้าร่วม ${FM.att.length - p}`;
 }
 const tick = (i, v) => { FM.att[i].present = v; cnt(); };
 const markAll = v => { FM.att.forEach(a => a.present = !!v); renderAtt(); };
 const syncMem = safe(async () => {
-  const sid = $('#f_sub').value;
-  if (!sid) return;
-  const r = await api('listMembers', { subdistrictId: sid });
+  const role = S.user.role;
+  let r = [];
+  if (role === 'subdistrict' || ($('#f_sub') && $('#f_sub').value)) {
+    const sid = ($('#f_sub') && $('#f_sub').value) || S.user.subdistrictId;
+    if (!sid) return;
+    r = await api('listMembers', { subdistrictId: sid });
+  } else if (role === 'district' || ($('#f_dist') && $('#f_dist').value)) {
+    const did = ($('#f_dist') && $('#f_dist').value) || S.user.districtId;
+    if (!did) return;
+    r = await api('listMembers', { districtId: did });
+  } else {
+    // จังหวัด / ส่วนกลาง — ไม่บังคับรายชื่อ
+    renderAtt();
+    return;
+  }
   const have = new Set(FM.att.map(x => x.id));
   r.forEach(x => {
     if (!have.has(x.id)) FM.att.push({ id: x.id, name: x.name, position: x.position, present: false });
   });
   renderAtt();
-  if (!r.length) toast('ตำบลนี้ยังไม่มีรายชื่อองค์ประชุม (เพิ่มได้ที่เมนู องค์ประชุม)', 1);
+  if (!r.length) toast('ยังไม่มีรายชื่อองค์ประชุมในพื้นที่นี้', 1);
 });
 const subChange = () => { FM.att = []; renderAtt(); syncMem(); };
 const saveMeeting = safe(async () => {
   colTopics();
+  const role = S.user.role;
   const d = {
     id: FM.id,
     date: $('#f_date').value,
     typeId: $('#f_type').value,
-    subdistrictId: $('#f_sub').value,
     title: $('#f_title').value.trim(),
     attendance: FM.att,
-    topics: FM.topics.filter(t => t.title.trim() || t.detail.trim())
+    topics: FM.topics.filter(t => t.title.trim() || t.detail.trim()),
+    subdistrictId: '',
+    districtId: '',
+    provinceId: ''
   };
-  if (!d.date || !d.typeId || !d.subdistrictId) return toast('กรอกวันที่ ประเภท และตำบลให้ครบ', 1);
-  if (!d.attendance.length) return toast('ยังไม่มีรายชื่อองค์ประชุม', 1);
-  await api('saveMeeting', d);
-  closeM();
-  S.my = null;
+  if (role === 'subdistrict') {
+    d.subdistrictId = ($('#f_sub') && $('#f_sub').value) || S.user.subdistrictId;
+  } else if (role === 'district') {
+    d.districtId = ($('#f_dist') && $('#f_dist').value) || S.user.districtId;
+  } else if (role === 'province') {
+    d.provinceId = ($('#f_prov') && $('#f_prov').value) || S.user.provinceId;
+  } else {
+    const lv = ($('#f_level') && $('#f_level').value) || 'central';
+    if (lv === 'subdistrict') d.subdistrictId = $('#f_sub') ? $('#f_sub').value : '';
+    else if (lv === 'district') d.districtId = $('#f_dist') ? $('#f_dist').value : '';
+    else if (lv === 'province') d.provinceId = $('#f_prov') ? $('#f_prov').value : '';
+  }
+  if (!d.date || !d.typeId) return toast('กรอกวันที่และประเภทให้ครบ', 1);
+  if (role === 'subdistrict' && !d.subdistrictId) return toast('ไม่พบตำบลในความรับผิดชอบ', 1);
+  if (role === 'district' && !d.districtId) return toast('ไม่พบอำเภอในความรับผิดชอบ', 1);
+  if (role === 'province' && !d.provinceId) return toast('ไม่พบจังหวัดในความรับผิดชอบ', 1);
+  if ((role === 'subdistrict' || role === 'district') && !d.attendance.length) {
+    return toast('ยังไม่มีรายชื่อองค์ประชุม — กดโหลดรายชื่อล่าสุด', 1);
+  }
+  showBusy('กำลังบันทึก', 'บันทึกการประชุม...');
+  try {
+    await api('saveMeeting', d);
+    hideBusy();
+    closeM();
+    S.my = null;
+  } catch (e) {
+    hideBusy();
+    throw e;
+  }
   toast('บันทึกแล้ว');
   await redraw();
 });
@@ -642,7 +757,12 @@ const savePw = safe(async () => {
 });
 
 /* ========== Reports ========== */
-const area = m => `ต.${nm(S.subdistricts, m.subdistrictId)} อ.${nm(S.districts, m.districtId)} จ.${nm(S.provinces, m.provinceId)}`;
+const area = m => {
+  if (m.subdistrictId) return `ต.${nm(S.subdistricts, m.subdistrictId)} อ.${nm(S.districts, m.districtId)} จ.${nm(S.provinces, m.provinceId)}`;
+  if (m.districtId) return `อ.${nm(S.districts, m.districtId)} จ.${nm(S.provinces, m.provinceId)} (ระดับอำเภอ)`;
+  if (m.provinceId) return `จ.${nm(S.provinces, m.provinceId)} (ระดับจังหวัด)`;
+  return 'ส่วนกลาง';
+};
 
 async function makePDF(html, fn, land) {
   showBusy('กำลังสร้างรายงาน', 'กรุณารอสักครู่...');

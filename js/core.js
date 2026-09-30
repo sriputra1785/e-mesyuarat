@@ -91,8 +91,8 @@ const sbT = { province: 'provinces', district: 'districts', subdistrict: 'subdis
 const nl = v => v || null;
 const mapM = r => ({
   id: r.id, date: r.meeting_date, typeId: r.type_id,
-  provinceId: r.province_id, districtId: r.district_id, subdistrictId: r.subdistrict_id,
-  title: r.title || '', total: r.total, present: r.present, absent: r.absent,
+  provinceId: r.province_id || '', districtId: r.district_id || '', subdistrictId: r.subdistrict_id || '',
+  title: r.title || '', total: r.total || 0, present: r.present || 0, absent: r.absent || 0,
   attendance: r.attendance || [], topics: r.topics || []
 });
 /* รหัสผู้ใช้ → อีเมลภายใน (Supabase ต้องใช้อีเมล) */
@@ -271,11 +271,19 @@ const H = {
     return 1;
   },
   async listMembers(d) {
-    return un(await sb.from('members')
-      .select('id,subdistrict_id,name,position')
-      .eq('subdistrict_id', d.subdistrictId)
-      .order('name')
-    ).map(x => ({ id: x.id, subdistrictId: x.subdistrict_id, name: x.name, position: x.position || '' }));
+    let q = sb.from('members').select('id,subdistrict_id,name,position').order('name');
+    if (d.districtId) {
+      const ids = un(await sb.from('subdistricts').select('id').eq('district_id', d.districtId)).map(x => x.id);
+      if (!ids.length) return [];
+      q = q.in('subdistrict_id', ids);
+    } else if (d.subdistrictId) {
+      q = q.eq('subdistrict_id', d.subdistrictId);
+    } else {
+      return [];
+    }
+    return un(await q).map(x => ({
+      id: x.id, subdistrictId: x.subdistrict_id, name: x.name, position: x.position || ''
+    }));
   },
   async saveMember(d) {
     const n = String(d.name || '').trim();
@@ -317,19 +325,31 @@ const H = {
     return out.map(mapM);
   },
   async saveMeeting(d) {
-    const sid = d.subdistrictId;
-    if (!sid) throw new Error('เลือกตำบล');
-    // เติม district_id / province_id จากตำบล (สำคัญต่อ RLS ของอำเภอ/จังหวัด)
-    const sub = (typeof S !== 'undefined' ? S.subdistricts : []).find(x => x.id === sid);
-    const distId = sub ? sub.districtId : (d.districtId || null);
-    const dist = (typeof S !== 'undefined' ? S.districts : []).find(x => x.id === distId);
-    const provId = dist ? dist.provinceId : (d.provinceId || null);
+    let sid = d.subdistrictId || null;
+    let distId = d.districtId || null;
+    let provId = d.provinceId || null;
+    // เติม parent จากตำบล / อำเภอ
+    if (sid) {
+      const sub = (S.subdistricts || []).find(x => x.id === sid);
+      if (sub) {
+        distId = sub.districtId;
+        const dist = (S.districts || []).find(x => x.id === distId);
+        if (dist) provId = dist.provinceId;
+      }
+    } else if (distId) {
+      const dist = (S.districts || []).find(x => x.id === distId);
+      if (dist) provId = dist.provinceId;
+      sid = null;
+    } else if (provId) {
+      sid = null;
+      distId = null;
+    }
     const row = {
       meeting_date: d.date,
       type_id: d.typeId,
       subdistrict_id: sid,
-      district_id: distId || null,
-      province_id: provId || null,
+      district_id: distId,
+      province_id: provId,
       title: String(d.title || '').slice(0, 300),
       attendance: (d.attendance || []).map(a => ({
         id: a.id, name: a.name, position: a.position, present: !!a.present
@@ -339,8 +359,6 @@ const H = {
         detail: String(t.detail || '').slice(0, 5000)
       }))
     };
-    if (!row.attendance.length) throw new Error('ไม่มีรายชื่อองค์ประชุม');
-    // คำนวณจำนวน (กรณีไม่มี generated column / trigger)
     row.total = row.attendance.length;
     row.present = row.attendance.filter(a => a.present).length;
     row.absent = row.total - row.present;
