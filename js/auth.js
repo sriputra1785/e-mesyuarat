@@ -5,18 +5,25 @@ async function doLogin(ev) {
   const f = ev.target;
   const errEl = document.getElementById('lerr');
   if (errEl) errEl.textContent = '';
+  const btn = f.querySelector('button[type="submit"], .btn');
+  if (btn) btn.disabled = true;
+  showBusy('กำลังเข้าสู่ระบบ', 'กำลังตรวจสอบรหัสผู้ใช้...');
   try {
     await api('login', { username: f.u.value, password: f.p.value });
     f.reset();
     // แยกหน้า: หลังล็อกอินไปหน้าแอป
     if (!document.getElementById('app')) {
-      location.href = 'app.html';
+      location.replace('app.html');
       return;
     }
     await boot();
+    hideBusy();
     toast('ยินดีต้อนรับ ' + S.user.name);
   } catch (e) {
+    hideBusy();
     if (errEl) errEl.textContent = e.message;
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ระบบแจ้งสถานการณ์น้ำท่วม</title>
+<title>เข้าสู่ระบบ | ระบบบันทึกการประชุมออนไลน์</title>
 <meta name="description" content="ระบบบันทึกการประชุมออนไลน์ระดับตำบล อำเภอ จังหวัด">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://sriputra1785.github.io/e-mesyuarat/">
@@ -16,8 +16,10 @@
 <section id="landing">
   <div class="hero">
     <div class="wrap">
-      <div>
-        <h1>E-MS<br>ระบบแจ้งสถานการณ์น้ำท่วม</h1>
+      <div class="hero-brand">
+        <div class="logo">MS</div>
+        <h1>ระบบบันทึกการประชุมออนไลน์</h1>
+        <p>บันทึกการประชุม ติ๊กชื่อผู้เข้าร่วม แล้วออกรายงานได้ทันที</p>
         <div class="seal">แต่ละพื้นที่บันทึกได้เฉพาะเขตรับผิดชอบของตน<br>ส่วนกลางเห็นภาพรวมทั้งหมด</div>
       </div>
       <form class="lg" onsubmit="doLogin(event)">
@@ -34,14 +36,12 @@
       </form>
     </div>
   </div>
-  <footer>ระบบบันทึกการประชุมออนไลน์</footer>
 </section>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/core.js"></script>
 <script src="js/auth.js"></script>
 <script>
-// แสดงข้อความจาก logout อัตโนมัติ
 (function () {
   const q = new URLSearchParams(location.search).get('msg');
   if (q) {

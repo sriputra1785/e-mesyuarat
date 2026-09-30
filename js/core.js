@@ -33,7 +33,24 @@ const subL  = s => ({ id: s.id, label: s.name + ' (อ.' + nm(S.districts, s.dis
 const distL = d => ({ id: d.id, label: d.name + ' (จ.' + nm(S.provinces, d.provinceId) + ')' });
 
 let last = Date.now(), busy = 0;
-const load = on => { busy += on ? 1 : -1; $('#top').style.display = busy > 0 ? 'block' : 'none'; };
+const load = on => { busy += on ? 1 : -1; const el = document.getElementById('top'); if (el) el.style.display = busy > 0 ? 'block' : 'none'; };
+
+const SPINNER_HTML = `<div class="sw-spinner" aria-hidden="true">${Array.from({ length: 12 }, () => '<i></i>').join('')}</div>`;
+
+/** แสดง SweetAlert กำลังโหลด (ไอคอนหมุน) */
+function showBusy(title, text) {
+  return Swal.fire({
+    title: title || 'กำลังโหลด',
+    html: SPINNER_HTML + (text ? `<p style="margin:12px 0 0">${text}</p>` : '<p style="margin:12px 0 0;color:#64748b">กรุณารอสักครู่</p>'),
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    showConfirmButton: false,
+    customClass: { popup: 'sw-loading-popup' }
+  });
+}
+function hideBusy() {
+  if (Swal.isVisible()) Swal.close();
+}
 
 const Toast = Swal.mixin({
   toast: true, position: 'top-end', showConfirmButton: false, timer: 3000,

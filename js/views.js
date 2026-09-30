@@ -642,11 +642,7 @@ const savePw = safe(async () => {
 const area = m => `ต.${nm(S.subdistricts, m.subdistrictId)} อ.${nm(S.districts, m.districtId)} จ.${nm(S.provinces, m.provinceId)}`;
 
 async function makePDF(html, fn, land) {
-  Swal.fire({
-    title: 'กำลังสร้างรายงาน', text: 'กรุณารอสักครู่',
-    allowOutsideClick: false, showConfirmButton: false,
-    didOpen: () => Swal.showLoading()
-  });
+  showBusy('กำลังสร้างรายงาน', 'กรุณารอสักครู่...');
   await document.fonts.ready;
   const d = document.createElement('div');
   d.className = 'rep';
@@ -665,7 +661,7 @@ async function makePDF(html, fn, land) {
     okp = 1;
   } finally {
     d.remove();
-    Swal.close();
+    hideBusy();
   }
   if (okp) toast('สร้างรายงานแล้ว');
 }
