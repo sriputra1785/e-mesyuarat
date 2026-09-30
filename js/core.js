@@ -271,24 +271,53 @@ const H = {
     return 1;
   },
   async listMembers(d) {
-    let q = sb.from('members').select('id,subdistrict_id,name,position').order('name');
-    if (d.districtId) {
-      const ids = un(await sb.from('subdistricts').select('id').eq('district_id', d.districtId)).map(x => x.id);
-      if (!ids.length) return [];
-      q = q.in('subdistrict_id', ids);
-    } else if (d.subdistrictId) {
+    // แยกระดับ: ตำบล / อำเภอ / จังหวัด — ไม่ดึงปนกัน
+    let q = sb.from('members').select('id,subdistrict_id,district_id,province_id,name,position').order('name');
+    if (d.subdistrictId) {
       q = q.eq('subdistrict_id', d.subdistrictId);
+    } else if (d.districtId) {
+      // เฉพาะองค์ประชุมระดับอำเภอ (ไม่มีตำบล)
+      q = q.eq('district_id', d.districtId).is('subdistrict_id', null);
+    } else if (d.provinceId) {
+      q = q.eq('province_id', d.provinceId).is('district_id', null).is('subdistrict_id', null);
     } else {
       return [];
     }
     return un(await q).map(x => ({
-      id: x.id, subdistrictId: x.subdistrict_id, name: x.name, position: x.position || ''
+      id: x.id,
+      subdistrictId: x.subdistrict_id || '',
+      districtId: x.district_id || '',
+      provinceId: x.province_id || '',
+      name: x.name,
+      position: x.position || ''
     }));
   },
   async saveMember(d) {
     const n = String(d.name || '').trim();
     if (!n) throw new Error('กรอกชื่อ');
-    const row = { subdistrict_id: d.subdistrictId, name: n, position: String(d.position || '').trim() };
+    const row = {
+      name: n,
+      position: String(d.position || '').trim(),
+      subdistrict_id: d.subdistrictId || null,
+      district_id: d.districtId || null,
+      province_id: d.provinceId || null
+    };
+    // เติม parent จากตำบล/อำเภอ
+    if (row.subdistrict_id) {
+      const sub = (S.subdistricts || []).find(x => x.id === row.subdistrict_id);
+      if (sub) {
+        row.district_id = sub.districtId;
+        const dist = (S.districts || []).find(x => x.id === row.district_id);
+        if (dist) row.province_id = dist.provinceId;
+      }
+    } else if (row.district_id) {
+      const dist = (S.districts || []).find(x => x.id === row.district_id);
+      if (dist) row.province_id = dist.provinceId;
+      row.subdistrict_id = null;
+    } else if (row.province_id) {
+      row.district_id = null;
+      row.subdistrict_id = null;
+    }
     un(await (d.id ? sb.from('members').update(row).eq('id', d.id) : sb.from('members').insert(row)));
     return 1;
   },
@@ -299,7 +328,26 @@ const H = {
       const n = String(x.name || '').trim();
       if (n && !have.has(n)) {
         have.add(n);
-        rows.push({ subdistrict_id: d.subdistrictId, name: n, position: String(x.position || '').trim() });
+        const row = {
+          name: n,
+          position: String(x.position || '').trim(),
+          subdistrict_id: d.subdistrictId || null,
+          district_id: d.districtId || null,
+          province_id: d.provinceId || null
+        };
+        if (row.subdistrict_id) {
+          const sub = (S.subdistricts || []).find(s => s.id === row.subdistrict_id);
+          if (sub) {
+            row.district_id = sub.districtId;
+            const dist = (S.districts || []).find(dd => dd.id === row.district_id);
+            if (dist) row.province_id = dist.provinceId;
+          }
+        } else if (row.district_id) {
+          const dist = (S.districts || []).find(dd => dd.id === row.district_id);
+          if (dist) row.province_id = dist.provinceId;
+          row.subdistrict_id = null;
+        }
+        rows.push(row);
       }
     });
     if (rows.length) un(await sb.from('members').insert(rows));

@@ -383,16 +383,20 @@ const markAll = v => { FM.att.forEach(a => a.present = !!v); renderAtt(); };
 const syncMem = safe(async () => {
   const role = S.user.role;
   let r = [];
+  // ดึงเฉพาะองค์ประชุมระดับเดียวกับการประชุม — ไม่ปนตำบลกับอำเภอ
   if (role === 'subdistrict' || ($('#f_sub') && $('#f_sub').value)) {
     const sid = ($('#f_sub') && $('#f_sub').value) || S.user.subdistrictId;
     if (!sid) return;
     r = await api('listMembers', { subdistrictId: sid });
-  } else if (role === 'district' || ($('#f_dist') && $('#f_dist').value)) {
+  } else if (role === 'district' || ($('#f_dist') && $('#f_dist').value && !($('#f_sub') && $('#f_sub').value))) {
     const did = ($('#f_dist') && $('#f_dist').value) || S.user.districtId;
     if (!did) return;
-    r = await api('listMembers', { districtId: did });
+    r = await api('listMembers', { districtId: did }); // เฉพาะระดับอำเภอ
+  } else if (role === 'province' || ($('#f_prov') && $('#f_prov').value && !($('#f_dist') && $('#f_dist').value))) {
+    const pid = ($('#f_prov') && $('#f_prov').value) || S.user.provinceId;
+    if (!pid) return;
+    r = await api('listMembers', { provinceId: pid });
   } else {
-    // จังหวัด / ส่วนกลาง — ไม่บังคับรายชื่อ
     renderAtt();
     return;
   }
@@ -401,7 +405,7 @@ const syncMem = safe(async () => {
     if (!have.has(x.id)) FM.att.push({ id: x.id, name: x.name, position: x.position, present: false });
   });
   renderAtt();
-  if (!r.length) toast('ยังไม่มีรายชื่อองค์ประชุมในพื้นที่นี้', 1);
+  if (!r.length) toast('ยังไม่มีรายชื่อองค์ประชุมระดับนี้ — เพิ่มได้ที่เมนู องค์ประชุม', 1);
 });
 const subChange = () => { FM.att = []; renderAtt(); syncMem(); };
 const saveMeeting = safe(async () => {
@@ -452,30 +456,69 @@ const saveMeeting = safe(async () => {
 });
 
 /* ========== Members ========== */
-const M = { sub: '' };
+const M = { sub: '', dist: '', prov: '' };
+
+function memScopeQuery() {
+  const u = S.user;
+  if (u.role === 'subdistrict') return { subdistrictId: u.subdistrictId };
+  if (u.role === 'district') return { districtId: u.districtId };
+  if (u.role === 'province') return { provinceId: u.provinceId };
+  // ส่วนกลาง: ใช้ตัวเลือกในหน้า
+  if (M.sub) return { subdistrictId: M.sub };
+  if (M.dist) return { districtId: M.dist };
+  if (M.prov) return { provinceId: M.prov };
+  return null;
+}
+function memScopeLabel() {
+  const u = S.user;
+  if (u.role === 'subdistrict') return 'ตำบล ' + nm(S.subdistricts, u.subdistrictId);
+  if (u.role === 'district') return 'อำเภอ ' + nm(S.districts, u.districtId) + ' (ระดับอำเภอ — ไม่รวมรายชื่อตำบล)';
+  if (u.role === 'province') return 'จังหวัด ' + nm(S.provinces, u.provinceId) + ' (ระดับจังหวัด)';
+  return 'ส่วนกลาง';
+}
 
 async function viewMem() {
+  const u = S.user;
   const sc = myScope();
-  const subs = sc.subdistricts;
-  if (sc.lockSub) M.sub = sc.lockSub;
-  else if (!subs.find(s => s.id === M.sub)) M.sub = subs[0] ? subs[0].id : '';
-  S.members = M.sub ? await api('listMembers', { subdistrictId: M.sub }) : [];
-  // แก้รายชื่อองค์ประชุมได้เฉพาะระดับตำบล (ในตำบลตน) หรือส่วนกลาง
-  const ed = (S.user.role === 'subdistrict' && M.sub === S.user.subdistrictId) || S.user.role === 'central';
-  const lockSub = !!sc.lockSub;
+  // ตั้งค่า scope ตาม role
+  if (u.role === 'subdistrict') M.sub = u.subdistrictId;
+  if (u.role === 'district') M.dist = u.districtId;
+  if (u.role === 'province') M.prov = u.provinceId;
+
+  const q = memScopeQuery();
+  S.members = q ? await api('listMembers', q) : [];
+  const ed = ['subdistrict', 'district', 'province', 'central'].includes(u.role);
+
+  let scopeBar = '';
+  if (u.role === 'subdistrict') {
+    scopeBar = `<p style="margin:0;font-size:14px;color:var(--mut)">องค์ประชุมของ <b>${esc(memScopeLabel())}</b></p>`;
+  } else if (u.role === 'district') {
+    scopeBar = `<p style="margin:0;font-size:14px;color:var(--mut)">องค์ประชุม <b>ระดับอำเภอ</b> (${esc(nm(S.districts, u.districtId))}) — แยกจากรายชื่อตำบล</p>`;
+  } else if (u.role === 'province') {
+    scopeBar = `<p style="margin:0;font-size:14px;color:var(--mut)">องค์ประชุม <b>ระดับจังหวัด</b> (${esc(nm(S.provinces, u.provinceId))})</p>`;
+  } else {
+    // ส่วนกลางเลือกดูระดับ
+    scopeBar = `
+      <div class="fl">
+        <label>จังหวัด<select onchange="M.prov=this.value;M.dist='';M.sub='';redraw()">
+          ${opts(S.provinces, M.prov, 'ทั้งหมด/ไม่เลือก')}</select></label>
+        <label>อำเภอ (ระดับอำเภอ)<select onchange="M.dist=this.value;M.sub='';redraw()">
+          ${opts(S.districts.filter(d => !M.prov || d.provinceId === M.prov).map(distL), M.dist, 'ไม่เลือก')}</select></label>
+        <label>ตำบล<select onchange="M.sub=this.value;redraw()">
+          ${opts(S.subdistricts.filter(s => !M.dist || s.districtId === M.dist).map(subL), M.sub, 'ไม่เลือก')}</select></label>
+      </div>
+      <p style="margin:8px 0 0;font-size:13px;color:var(--mut)">เลือกตำบล = รายชื่อตำบล · เลือกแค่อำเภอ = รายชื่อระดับอำเภอ · เลือกแค่จังหวัด = รายชื่อระดับจังหวัด</p>`;
+  }
+
   $('#view').innerHTML = `
     <div class="head">
       <h2>องค์ประชุม</h2>
-      ${ed && M.sub ? `<div>
+      ${ed && q ? `<div>
         <button class="btn sec" onclick="openBulk()">เพิ่มหลายรายชื่อ</button>
         <button class="btn" onclick="openMember()">+ เพิ่มรายชื่อ</button>
       </div>` : ''}
     </div>
-    <div class="card">
-      <label>ตำบล<select onchange="M.sub=this.value;redraw()" ${lockSub ? 'disabled' : ''}>${opts(subs.map(subL), M.sub)}</select></label>
-      ${lockSub ? '<p style="margin:8px 0 0;font-size:13px;color:var(--mut)">แสดงเฉพาะตำบลในความรับผิดชอบของท่าน</p>' : ''}
-      ${S.user.role !== 'subdistrict' && S.user.role !== 'central' ? '<p style="margin:8px 0 0;font-size:13px;color:var(--mut)">การเพิ่ม/แก้รายชื่อองค์ประชุมทำโดยผู้ใช้ระดับตำบล</p>' : ''}
-    </div>
+    <div class="card">${scopeBar}</div>
     <div class="card tw">
       ${S.members.length ? `
         <table>
@@ -487,7 +530,7 @@ async function viewMem() {
               <button class="btn bad sm" onclick="delMem('${x.id}')">ลบ</button>` : ''}
             </td>
           </tr>`).join('')}
-        </table>` : '<div class="empty">ยังไม่มีรายชื่อองค์ประชุมในตำบลนี้</div>'}
+        </table>` : `<div class="empty">ยังไม่มีรายชื่อองค์ประชุม${q ? 'ในระดับนี้' : ' — เลือกพื้นที่ก่อน'}</div>`}
     </div>`;
 }
 
@@ -501,7 +544,9 @@ function openMember(id) {
     <p style="margin-top:16px"><button class="btn" onclick="saveMem('${id || ''}')">บันทึก</button></p>`);
 }
 const saveMem = safe(async id => {
-  await api('saveMember', { id, subdistrictId: M.sub, name: $('#m_n').value, position: $('#m_p').value });
+  const q = memScopeQuery();
+  if (!q) return toast('เลือกพื้นที่ก่อน', 1);
+  await api('saveMember', { id, ...q, name: $('#m_n').value, position: $('#m_p').value });
   closeM();
   toast('บันทึกแล้ว');
   await redraw();
@@ -514,16 +559,18 @@ const delMem = safe(async id => {
 function openBulk() {
   openM(`${mh('เพิ่มหลายรายชื่อ')}
     <label>พิมพ์/วาง 1 บรรทัดต่อ 1 คน รูปแบบ: ชื่อ-สกุล, ตำแหน่ง
-      <textarea id="b_t" style="min-height:220px" placeholder="นายสมชาย ใจดี, นายก อบต.&#10;นางสมหญิง รักดี, ประธานสภา"></textarea>
+      <textarea id="b_t" style="min-height:220px" placeholder="นายสมชาย ใจดี, นายอำเภอ&#10;นางสมหญิง รักดี, ปลัดอำเภอ"></textarea>
     </label>
     <p style="margin-top:12px"><button class="btn" onclick="saveBulk()">บันทึกทั้งหมด</button></p>`);
 }
 const saveBulk = safe(async () => {
+  const q = memScopeQuery();
+  if (!q) return toast('เลือกพื้นที่ก่อน', 1);
   const list = $('#b_t').value.split('\n').map(l => {
     const [n, ...p] = l.split(',');
     return { name: n.trim(), position: p.join(',').trim() };
   }).filter(x => x.name);
-  const n = await api('saveMembers', { subdistrictId: M.sub, list });
+  const n = await api('saveMembers', { ...q, list });
   closeM();
   toast('เพิ่ม ' + n + ' รายชื่อ');
   await redraw();
