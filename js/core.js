@@ -295,33 +295,61 @@ const H = {
   async saveMember(d) {
     const n = String(d.name || '').trim();
     if (!n) throw new Error('กรอกชื่อ');
+    const hasSub = !!(d.subdistrictId);
+    const hasDist = !!(d.districtId);
+    const hasProv = !!(d.provinceId);
+    if (!hasSub && !hasDist && !hasProv) {
+      throw new Error('ไม่พบพื้นที่สำหรับบันทึกองค์ประชุม (ตำบล/อำเภอ/จังหวัด)');
+    }
     const row = {
       name: n,
       position: String(d.position || '').trim(),
-      subdistrict_id: d.subdistrictId || null,
-      district_id: d.districtId || null,
-      province_id: d.provinceId || null
+      subdistrict_id: null,
+      district_id: null,
+      province_id: null
     };
-    // เติม parent จากตำบล/อำเภอ
-    if (row.subdistrict_id) {
+    if (hasSub) {
+      // ระดับตำบล
+      row.subdistrict_id = d.subdistrictId;
       const sub = (S.subdistricts || []).find(x => x.id === row.subdistrict_id);
       if (sub) {
         row.district_id = sub.districtId;
         const dist = (S.districts || []).find(x => x.id === row.district_id);
         if (dist) row.province_id = dist.provinceId;
       }
-    } else if (row.district_id) {
+    } else if (hasDist) {
+      // ระดับอำเภอ — ไม่ผูกตำบล
+      row.district_id = d.districtId;
+      row.subdistrict_id = null;
       const dist = (S.districts || []).find(x => x.id === row.district_id);
       if (dist) row.province_id = dist.provinceId;
-      row.subdistrict_id = null;
-    } else if (row.province_id) {
+    } else {
+      // ระดับจังหวัด
+      row.province_id = d.provinceId;
       row.district_id = null;
       row.subdistrict_id = null;
     }
-    un(await (d.id ? sb.from('members').update(row).eq('id', d.id) : sb.from('members').insert(row)));
+    try {
+      un(await (d.id ? sb.from('members').update(row).eq('id', d.id) : sb.from('members').insert(row)));
+    } catch (e) {
+      const m = e.message || '';
+      if (/district_id|province_id|column/i.test(m)) {
+        throw new Error('ฐานข้อมูลยังไม่รองรับองค์ประชุมระดับอำเภอ/จังหวัด — รัน SQL ในไฟล์ members-by-level.sql ก่อน');
+      }
+      if (/null value.*subdistrict/i.test(m)) {
+        throw new Error('ฐานข้อมูลบังคับให้มีตำบลอยู่ — รัน SQL: ALTER TABLE members ALTER COLUMN subdistrict_id DROP NOT NULL');
+      }
+      throw e;
+    }
     return 1;
   },
   async saveMembers(d) {
+    const hasSub = !!(d.subdistrictId);
+    const hasDist = !!(d.districtId);
+    const hasProv = !!(d.provinceId);
+    if (!hasSub && !hasDist && !hasProv) {
+      throw new Error('ไม่พบพื้นที่สำหรับบันทึกองค์ประชุม (ตำบล/อำเภอ/จังหวัด)');
+    }
     const have = new Set((await H.listMembers(d)).map(x => x.name));
     const rows = [];
     (d.list || []).slice(0, 300).forEach(x => {
@@ -331,26 +359,42 @@ const H = {
         const row = {
           name: n,
           position: String(x.position || '').trim(),
-          subdistrict_id: d.subdistrictId || null,
-          district_id: d.districtId || null,
-          province_id: d.provinceId || null
+          subdistrict_id: null,
+          district_id: null,
+          province_id: null
         };
-        if (row.subdistrict_id) {
+        if (hasSub) {
+          row.subdistrict_id = d.subdistrictId;
           const sub = (S.subdistricts || []).find(s => s.id === row.subdistrict_id);
           if (sub) {
             row.district_id = sub.districtId;
             const dist = (S.districts || []).find(dd => dd.id === row.district_id);
             if (dist) row.province_id = dist.provinceId;
           }
-        } else if (row.district_id) {
+        } else if (hasDist) {
+          row.district_id = d.districtId;
           const dist = (S.districts || []).find(dd => dd.id === row.district_id);
           if (dist) row.province_id = dist.provinceId;
-          row.subdistrict_id = null;
+        } else {
+          row.province_id = d.provinceId;
         }
         rows.push(row);
       }
     });
-    if (rows.length) un(await sb.from('members').insert(rows));
+    if (rows.length) {
+      try {
+        un(await sb.from('members').insert(rows));
+      } catch (e) {
+        const m = e.message || '';
+        if (/district_id|province_id|column/i.test(m)) {
+          throw new Error('ฐานข้อมูลยังไม่รองรับองค์ประชุมระดับอำเภอ/จังหวัด — รัน SQL ในไฟล์ members-by-level.sql ก่อน');
+        }
+        if (/null value.*subdistrict/i.test(m)) {
+          throw new Error('ฐานข้อมูลบังคับให้มีตำบลอยู่ — รัน SQL: ALTER TABLE members ALTER COLUMN subdistrict_id DROP NOT NULL');
+        }
+        throw e;
+      }
+    }
     return rows.length;
   },
   async delMember(d) {
