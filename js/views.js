@@ -79,15 +79,38 @@ function applyScopeFilters() {
   else if (sc.lockProv) { F.prov = sc.lockProv; if (F.dist && !sc.districts.some(d => d.id === F.dist)) { F.dist = ''; F.sub = ''; } }
 }
 
-const fm = () => {
+const fm = (list) => {
   applyScopeFilters();
-  return S.meetings.filter(m =>
+  const src = list || S.meetings || [];
+  return src.filter(m =>
     (!F.prov || m.provinceId === F.prov) &&
     (!F.dist || m.districtId === F.dist) &&
     (!F.sub  || m.subdistrictId === F.sub) &&
     (!F.type || m.typeId === F.type) &&
-    (!F.month || m.date.slice(5, 7) === F.month)
+    (!F.month || (m.date || '').slice(5, 7) === F.month)
   );
+};
+
+/* จัดกลุ่มตามตำบล (เฉพาะการประชุมระดับตำบล) */
+const groupBySub = L => {
+  const by = {};
+  L.filter(m => m.subdistrictId).forEach(m => {
+    (by[m.subdistrictId] = by[m.subdistrictId] || []).push(m);
+  });
+  return by;
+};
+
+const trendBadge = (delta) => {
+  if (delta === null || delta === undefined || isNaN(delta)) {
+    return '<span style="color:var(--mut)">— ไม่มีข้อมูลปีก่อน</span>';
+  }
+  if (delta > 0.5) {
+    return `<span style="color:#157a3c;font-weight:600">▲ พัฒนา +${delta.toFixed(1)}%</span>`;
+  }
+  if (delta < -0.5) {
+    return `<span style="color:#c53030;font-weight:600">▼ ด้อยลง ${delta.toFixed(1)}%</span>`;
+  }
+  return `<span style="color:#6b7280;font-weight:600">● คงที่ ${delta >= 0 ? '+' : ''}${delta.toFixed(1)}%</span>`;
 };
 
 function filterBar(mon) {
@@ -116,44 +139,78 @@ const tot = L => L.reduce((a, m) => ({ n: a.n + 1, t: a.t + m.total, p: a.p + m.
 const btns = `<button class="btn sec" onclick="expX()">Excel</button> <button class="btn" onclick="expP()">PDF สรุป</button>`;
 
 /* ========== Dashboard ========== */
-function viewDash() {
+async function viewDash() {
   const L = fm(), T = tot(L);
+  const yPrev = F.year - 1;
+
+  // โหลดข้อมูลปีก่อนเพื่อเปรียบเทียบ
+  if (S.prevYear !== yPrev) {
+    try {
+      S.prevMeetings = await api('listMeetings', { year: yPrev });
+      S.prevYear = yPrev;
+    } catch (e) {
+      S.prevMeetings = [];
+      S.prevYear = yPrev;
+    }
+  }
+  const Lprev = fm(S.prevMeetings || []);
+
   const mo = THS.map((n, i) => {
     const k = String(i + 1).padStart(2, '0');
-    const x = L.filter(m => m.date.slice(5, 7) === k);
+    const x = L.filter(m => (m.date || '').slice(5, 7) === k);
     const t = tot(x);
-    return { n, c: t.n, t: t.t, p: t.p, r: pct(t.p, t.t) };
+    return { n, c: t.n, t: t.t, p: t.p, r: +pct(t.p, t.t) };
   });
-  // จัดกลุ่มตามพื้นที่ (รองรับทั้งตำบล / อำเภอ / จังหวัด)
-  const by = {};
-  L.forEach(m => {
-    const key = m.subdistrictId
-      ? 's:' + m.subdistrictId
-      : m.districtId
-        ? 'd:' + m.districtId
-        : m.provinceId
-          ? 'p:' + m.provinceId
-          : 'c:central';
-    (by[key] = by[key] || []).push(m);
+
+  // --- เปรียบเทียบรายตำบล ปีนี้ vs ปีก่อน ---
+  const curBy = groupBySub(L);
+  const prevBy = groupBySub(Lprev);
+  const allSubIds = Array.from(new Set([...Object.keys(curBy), ...Object.keys(prevBy)]));
+
+  const cmpRows = allSubIds.map(sid => {
+    const curList = curBy[sid] || [];
+    const prevList = prevBy[sid] || [];
+    const tc = tot(curList);
+    const tp = tot(prevList);
+    const rNow = tc.t ? (tc.p / tc.t) * 100 : null;
+    const rPrev = tp.t ? (tp.p / tp.t) * 100 : null;
+    const delta = (rNow !== null && rPrev !== null) ? (rNow - rPrev) : null;
+    const sub = S.subdistricts.find(x => x.id === sid);
+    const distName = sub ? nm(S.districts, sub.districtId) : '';
+    return {
+      sid,
+      name: nm(S.subdistricts, sid),
+      dist: distName,
+      n: tc.n,
+      t: tc.t,
+      p: tc.p,
+      r: rNow !== null ? rNow.toFixed(1) : '—',
+      nPrev: tp.n,
+      rPrev: rPrev !== null ? rPrev.toFixed(1) : '—',
+      delta,
+      // เรียง: พัฒนาขึ้นก่อน แล้วด้อยลง แล้วที่ไม่มีข้อมูลปีก่อน
+      sortKey: delta === null ? -9999 : delta
+    };
+  }).sort((a, b) => b.sortKey - a.sortKey);
+
+  const improved = cmpRows.filter(r => r.delta !== null && r.delta > 0.5).length;
+  const declined = cmpRows.filter(r => r.delta !== null && r.delta < -0.5).length;
+  const stable = cmpRows.filter(r => r.delta !== null && Math.abs(r.delta) <= 0.5).length;
+  const noPrev = cmpRows.filter(r => r.delta === null).length;
+
+  // สรุปพื้นที่อื่น (อำเภอ/จังหวัด) ปีนี้
+  const otherBy = {};
+  L.filter(m => !m.subdistrictId).forEach(m => {
+    const key = m.districtId ? 'd:' + m.districtId : m.provinceId ? 'p:' + m.provinceId : 'c';
+    (otherBy[key] = otherBy[key] || []).push(m);
   });
-  const rows = Object.keys(by).map(key => {
-    const list = by[key], t = tot(list), m = list[0];
-    let s = '', d = '';
-    if (key.startsWith('s:')) {
-      s = nm(S.subdistricts, m.subdistrictId);
-      d = 'อ.' + nm(S.districts, m.districtId);
-    } else if (key.startsWith('d:')) {
-      s = 'อ.' + nm(S.districts, m.districtId) + ' (ระดับอำเภอ)';
-      d = 'จ.' + nm(S.provinces, m.provinceId);
-    } else if (key.startsWith('p:')) {
-      s = 'จ.' + nm(S.provinces, m.provinceId) + ' (ระดับจังหวัด)';
-      d = '-';
-    } else {
-      s = 'ส่วนกลาง';
-      d = '-';
-    }
-    return { id: key, s, d, ...t, r: pct(t.p, t.t) };
-  }).sort((a, b) => b.r - a.r);
+  const otherRows = Object.keys(otherBy).map(key => {
+    const list = otherBy[key], t = tot(list), m = list[0];
+    let label = 'ส่วนกลาง';
+    if (key.startsWith('d:')) label = 'อ.' + nm(S.districts, m.districtId) + ' (ระดับอำเภอ)';
+    else if (key.startsWith('p:')) label = 'จ.' + nm(S.provinces, m.provinceId) + ' (ระดับจังหวัด)';
+    return { label, ...t, r: pct(t.p, t.t) };
+  });
 
   $('#view').innerHTML = `
     <div class="head"><h2>แดชบอร์ดปี ${F.year + 543}</h2><div>${btns}</div></div>
@@ -165,6 +222,7 @@ function viewDash() {
       <div><b>${T.t - T.p}</b><span>ไม่เข้าร่วม</span></div>
       <div><b>${pct(T.p, T.t)}%</b><span>อัตราการเข้าร่วม</span></div>
     </div>
+
     <div class="card">
       <h3 style="margin-bottom:12px;font-size:16px;color:var(--navy)">อัตราการเข้าร่วมประชุมรายเดือน (%)</h3>
       <div class="bars">${mo.map(m => `
@@ -176,17 +234,63 @@ function viewDash() {
         </div>`).join('')}
       </div>
     </div>
+
     <div class="card tw">
-      <h3 style="margin-bottom:12px;font-size:16px;color:var(--navy)">สรุปรายตำบล</h3>
-      ${rows.length ? `
+      <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px">
+        <h3 style="margin:0;font-size:16px;color:var(--navy)">
+          เปรียบเทียบรายตำบล ปี ${F.year + 543} กับปี ${yPrev + 543}
+        </h3>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;font-size:13px">
+          <span style="color:#157a3c;font-weight:600">▲ พัฒนา ${improved}</span>
+          <span style="color:#c53030;font-weight:600">▼ ด้อยลง ${declined}</span>
+          <span style="color:#6b7280;font-weight:600">● คงที่ ${stable}</span>
+          <span style="color:var(--mut)">— ไม่มีปีก่อน ${noPrev}</span>
+        </div>
+      </div>
+      <p style="margin:0 0 12px;font-size:13px;color:var(--mut)">
+        เทียบร้อยละการเข้าร่วมประชุมของแต่ละตำบลกับปีก่อนหน้า (ตามตัวกรองปัจจุบัน)
+      </p>
+      ${cmpRows.length ? `
         <table>
-          <tr><th>ตำบล</th><th>อำเภอ</th><th class="n">ประชุม (ครั้ง)</th><th class="n">องค์ประชุมรวม</th><th class="n">เข้าร่วม</th><th class="n">ร้อยละ</th></tr>
-          ${rows.map(r => `<tr>
-            <td>${esc(r.s)}</td><td>${esc(r.d)}</td>
-            <td class="n">${r.n}</td><td class="n">${r.t}</td><td class="n">${r.p}</td><td class="n">${r.r}%</td>
-          </tr>`).join('')}
-        </table>` : '<div class="empty">ยังไม่มีข้อมูลการประชุมตามเงื่อนไขที่เลือก</div>'}
-    </div>`;
+          <tr>
+            <th>ตำบล</th>
+            <th>อำเภอ</th>
+            <th class="n">ครั้ง<br>ปีนี้</th>
+            <th class="n">% เข้าร่วม<br>ปีนี้</th>
+            <th class="n">ครั้ง<br>ปีก่อน</th>
+            <th class="n">% เข้าร่วม<br>ปีก่อน</th>
+            <th>แนวโน้ม</th>
+          </tr>
+          ${cmpRows.map(r => {
+            const rowBg = r.delta === null ? ''
+              : r.delta > 0.5 ? 'background:#f0fdf4'
+              : r.delta < -0.5 ? 'background:#fef2f2'
+              : '';
+            return `<tr style="${rowBg}">
+              <td>${esc(r.name)}</td>
+              <td>${esc(r.dist)}</td>
+              <td class="n">${r.n}</td>
+              <td class="n">${r.r}${r.r !== '—' ? '%' : ''}</td>
+              <td class="n">${r.nPrev}</td>
+              <td class="n">${r.rPrev}${r.rPrev !== '—' ? '%' : ''}</td>
+              <td>${trendBadge(r.delta)}</td>
+            </tr>`;
+          }).join('')}
+        </table>` : '<div class="empty">ยังไม่มีข้อมูลการประชุมระดับตำบลตามเงื่อนไขที่เลือก</div>'}
+    </div>
+
+    ${otherRows.length ? `
+    <div class="card tw">
+      <h3 style="margin-bottom:12px;font-size:16px;color:var(--navy)">สรุปการประชุมระดับอำเภอ / จังหวัด / ส่วนกลาง (ปีนี้)</h3>
+      <table>
+        <tr><th>พื้นที่</th><th class="n">ประชุม (ครั้ง)</th><th class="n">องค์ประชุม</th><th class="n">เข้าร่วม</th><th class="n">ร้อยละ</th></tr>
+        ${otherRows.map(r => `<tr>
+          <td>${esc(r.label)}</td>
+          <td class="n">${r.n}</td><td class="n">${r.t}</td><td class="n">${r.p}</td><td class="n">${r.r}%</td>
+        </tr>`).join('')}
+      </table>
+    </div>` : ''}
+  `;
 }
 
 /* ========== Meetings ========== */
@@ -983,23 +1087,61 @@ const reportFooter = () => {
 
 async function makePDF(html, fn, land) {
   showBusy('กำลังสร้างรายงาน', 'กรุณารอสักครู่...');
-  await document.fonts.ready;
+  try { await document.fonts.ready; } catch (e) {}
+
+  const w = land ? 1100 : 730;
   const d = document.createElement('div');
   d.className = 'rep';
-  d.style.width = (land ? 1100 : 730) + 'px';
+  // ต้องอยู่ในจอ (อย่าใช้ left:-10000) ไม่งั้น html2canvas ได้หน้าขาว
+  d.setAttribute('style', [
+    'position:fixed',
+    'left:0',
+    'top:0',
+    'width:' + w + 'px',
+    'padding:16px',
+    'box-sizing:border-box',
+    'background:#ffffff',
+    'color:#000000',
+    'font-family:Sarabun,Tahoma,sans-serif',
+    'font-size:14px',
+    'line-height:1.5',
+    'z-index:2147483646',
+    'opacity:1',
+    'pointer-events:none'
+  ].join(';'));
   d.innerHTML = html;
   document.body.appendChild(d);
+
+  // รอให้ browser วาด layout ก่อนจับภาพ
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  await new Promise(r => setTimeout(r, 80));
+
   let okp = 0;
   try {
     await html2pdf().set({
-      margin: [12, 10, 12, 10],
+      margin: [10, 10, 10, 10],
       filename: fn,
-      image: { type: 'jpeg', quality: 0.96 },
-      html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: land ? 'landscape' : 'portrait' },
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        windowWidth: w,
+        scrollX: 0,
+        scrollY: 0
+      },
+      jsPDF: {
+        unit: 'mm',
+        format: 'a4',
+        orientation: land ? 'landscape' : 'portrait'
+      },
       pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.nobreak'] }
     }).from(d).save();
     okp = 1;
+  } catch (e) {
+    console.error('PDF error', e);
+    toast('สร้าง PDF ไม่สำเร็จ: ' + (e.message || 'ข้อผิดพลาดไม่ทราบสาเหตุ'), 1);
   } finally {
     d.remove();
     hideBusy();
