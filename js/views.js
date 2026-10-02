@@ -485,20 +485,35 @@ function initMemMode() {
 
 function memScopeQuery() {
   initMemMode();
-  const u = S.user;
+  const u = S.user || {};
   if (M.mode === 'subdistrict') {
-    const sid = u.role === 'subdistrict' ? u.subdistrictId : M.sub;
-    return sid ? { subdistrictId: sid } : null;
+    const sid = (u.role === 'subdistrict' ? u.subdistrictId : M.sub) || '';
+    if (!sid) return { error: 'กรุณาเลือกตำบลก่อนบันทึกองค์ประชุม' };
+    return { subdistrictId: sid, districtId: '', provinceId: '' };
   }
   if (M.mode === 'district') {
-    const did = u.role === 'district' ? u.districtId : M.dist;
-    return did ? { districtId: did } : null;
+    const did = (u.role === 'district' ? u.districtId : M.dist) || '';
+    if (!did) {
+      return {
+        error: u.role === 'district'
+          ? 'บัญชีอำเภอยังไม่ได้ผูกอำเภอ — ให้ส่วนกลางแก้ที่เมนูผู้ใช้'
+          : 'กรุณาเลือกอำเภอก่อนบันทึกองค์ประชุม'
+      };
+    }
+    return { subdistrictId: '', districtId: did, provinceId: '' };
   }
   if (M.mode === 'province') {
-    const pid = u.role === 'province' ? u.provinceId : M.prov;
-    return pid ? { provinceId: pid } : null;
+    const pid = (u.role === 'province' ? u.provinceId : M.prov) || '';
+    if (!pid) {
+      return {
+        error: u.role === 'province'
+          ? 'บัญชีจังหวัดยังไม่ได้ผูกจังหวัด — ให้ส่วนกลางแก้ที่เมนูผู้ใช้'
+          : 'กรุณาเลือกจังหวัดก่อนบันทึกองค์ประชุม'
+      };
+    }
+    return { subdistrictId: '', districtId: '', provinceId: pid };
   }
-  return null;
+  return { error: 'ไม่ทราบระดับองค์ประชุม' };
 }
 
 function setMemMode(mode) {
@@ -511,7 +526,8 @@ function setMemMode(mode) {
 async function viewMem() {
   const u = S.user;
   initMemMode();
-  const q = memScopeQuery();
+  let q = memScopeQuery();
+  if (q && q.error) q = null;
   S.members = q ? await api('listMembers', q) : [];
 
   const sc = myScope();
@@ -571,7 +587,8 @@ async function viewMem() {
   }
 
   // โหลดใหม่หลังอาจตั้งค่า default
-  const q2 = memScopeQuery();
+  let q2 = memScopeQuery();
+  if (q2 && q2.error) q2 = null;
   if (JSON.stringify(q2) !== JSON.stringify(q)) {
     S.members = q2 ? await api('listMembers', q2) : [];
   }
@@ -622,13 +639,17 @@ function openMember(id) {
 }
 const saveMem = safe(async id => {
   const q = memScopeQuery();
-  if (!q) return toast('เลือกพื้นที่/ระดับองค์ประชุมให้ครบก่อน', 1);
-  if (q.subdistrictId === undefined && q.districtId === undefined && q.provinceId === undefined) {
-    return toast('ไม่พบพื้นที่สำหรับบันทึกองค์ประชุม', 1);
-  }
+  if (!q || q.error) return toast((q && q.error) || 'เลือกพื้นที่/ระดับองค์ประชุมให้ครบก่อน', 1);
   showBusy('กำลังบันทึก', 'บันทึกรายชื่อ...');
   try {
-    await api('saveMember', { id, ...q, name: $('#m_n').value, position: $('#m_p').value });
+    await api('saveMember', {
+      id: id || '',
+      subdistrictId: q.subdistrictId || '',
+      districtId: q.districtId || '',
+      provinceId: q.provinceId || '',
+      name: $('#m_n').value,
+      position: $('#m_p').value
+    });
     hideBusy();
     closeM();
     toast('บันทึกแล้ว');
@@ -652,7 +673,7 @@ function openBulk() {
 }
 const saveBulk = safe(async () => {
   const q = memScopeQuery();
-  if (!q) return toast('เลือกพื้นที่/ระดับองค์ประชุมให้ครบก่อน', 1);
+  if (!q || q.error) return toast((q && q.error) || 'เลือกพื้นที่/ระดับองค์ประชุมให้ครบก่อน', 1);
   const list = $('#b_t').value.split('\n').map(l => {
     const [n, ...p] = l.split(',');
     return { name: n.trim(), position: p.join(',').trim() };
@@ -660,7 +681,12 @@ const saveBulk = safe(async () => {
   if (!list.length) return toast('ไม่มีรายชื่อที่จะบันทึก', 1);
   showBusy('กำลังบันทึก', 'เพิ่มรายชื่อ...');
   try {
-    const n = await api('saveMembers', { ...q, list });
+    const n = await api('saveMembers', {
+      subdistrictId: q.subdistrictId || '',
+      districtId: q.districtId || '',
+      provinceId: q.provinceId || '',
+      list
+    });
     hideBusy();
     closeM();
     toast('เพิ่ม ' + n + ' รายชื่อ');

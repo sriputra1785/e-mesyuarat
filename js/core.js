@@ -272,14 +272,17 @@ const H = {
   },
   async listMembers(d) {
     // แยกระดับ: ตำบล / อำเภอ / จังหวัด — ไม่ดึงปนกัน
+    const sid = d.subdistrictId || '';
+    const did = d.districtId || '';
+    const pid = d.provinceId || '';
     let q = sb.from('members').select('id,subdistrict_id,district_id,province_id,name,position').order('name');
-    if (d.subdistrictId) {
-      q = q.eq('subdistrict_id', d.subdistrictId);
-    } else if (d.districtId) {
+    if (sid) {
+      q = q.eq('subdistrict_id', sid);
+    } else if (did) {
       // เฉพาะองค์ประชุมระดับอำเภอ (ไม่มีตำบล)
-      q = q.eq('district_id', d.districtId).is('subdistrict_id', null);
-    } else if (d.provinceId) {
-      q = q.eq('province_id', d.provinceId).is('district_id', null).is('subdistrict_id', null);
+      q = q.eq('district_id', did).is('subdistrict_id', null);
+    } else if (pid) {
+      q = q.eq('province_id', pid).is('district_id', null).is('subdistrict_id', null);
     } else {
       return [];
     }
