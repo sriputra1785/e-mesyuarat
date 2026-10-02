@@ -124,11 +124,35 @@ function viewDash() {
     const t = tot(x);
     return { n, c: t.n, t: t.t, p: t.p, r: pct(t.p, t.t) };
   });
+  // จัดกลุ่มตามพื้นที่ (รองรับทั้งตำบล / อำเภอ / จังหวัด)
   const by = {};
-  L.forEach(m => { (by[m.subdistrictId] = by[m.subdistrictId] || []).push(m); });
-  const rows = Object.keys(by).map(id => {
-    const t = tot(by[id]), m = by[id][0];
-    return { id, s: nm(S.subdistricts, id), d: nm(S.districts, m.districtId), ...t, r: pct(t.p, t.t) };
+  L.forEach(m => {
+    const key = m.subdistrictId
+      ? 's:' + m.subdistrictId
+      : m.districtId
+        ? 'd:' + m.districtId
+        : m.provinceId
+          ? 'p:' + m.provinceId
+          : 'c:central';
+    (by[key] = by[key] || []).push(m);
+  });
+  const rows = Object.keys(by).map(key => {
+    const list = by[key], t = tot(list), m = list[0];
+    let s = '', d = '';
+    if (key.startsWith('s:')) {
+      s = nm(S.subdistricts, m.subdistrictId);
+      d = 'อ.' + nm(S.districts, m.districtId);
+    } else if (key.startsWith('d:')) {
+      s = 'อ.' + nm(S.districts, m.districtId) + ' (ระดับอำเภอ)';
+      d = 'จ.' + nm(S.provinces, m.provinceId);
+    } else if (key.startsWith('p:')) {
+      s = 'จ.' + nm(S.provinces, m.provinceId) + ' (ระดับจังหวัด)';
+      d = '-';
+    } else {
+      s = 'ส่วนกลาง';
+      d = '-';
+    }
+    return { id: key, s, d, ...t, r: pct(t.p, t.t) };
   }).sort((a, b) => b.r - a.r);
 
   $('#view').innerHTML = `
@@ -932,111 +956,266 @@ const area = m => {
   return 'ส่วนกลาง';
 };
 
+/* ========== รายงาน ========== */
+const meetLevel = m => {
+  if (m.subdistrictId) return 'ตำบล';
+  if (m.districtId) return 'อำเภอ';
+  if (m.provinceId) return 'จังหวัด';
+  return 'ส่วนกลาง';
+};
+const filterDesc = () => {
+  const parts = ['ปี ' + (F.year + 543)];
+  if (F.month) parts.push('เดือน' + TH[+F.month - 1]);
+  if (F.prov) parts.push('จ.' + nm(S.provinces, F.prov));
+  if (F.dist) parts.push('อ.' + nm(S.districts, F.dist));
+  if (F.sub) parts.push('ต.' + nm(S.subdistricts, F.sub));
+  if (F.type) parts.push('ประเภท: ' + nm(S.types, F.type));
+  return parts.join(' · ');
+};
+const reportFooter = () => {
+  const now = new Date();
+  const ds = now.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+  const who = (S.user && S.user.name) ? S.user.name : '';
+  return `<div style="margin-top:28px;font-size:12px;color:#555;border-top:1px solid #ccc;padding-top:8px">
+    พิมพ์เมื่อ ${ds}${who ? ' · โดย ' + esc(who) : ''} · ระบบบันทึกการประชุมออนไลน์
+  </div>`;
+};
+
 async function makePDF(html, fn, land) {
   showBusy('กำลังสร้างรายงาน', 'กรุณารอสักครู่...');
   await document.fonts.ready;
   const d = document.createElement('div');
   d.className = 'rep';
-  d.style.width = (land ? 1050 : 730) + 'px';
+  d.style.width = (land ? 1100 : 730) + 'px';
   d.innerHTML = html;
   document.body.appendChild(d);
   let okp = 0;
   try {
     await html2pdf().set({
-      margin: 10, filename: fn,
-      image: { type: 'jpeg', quality: .95 },
-      html2canvas: { scale: 2, useCORS: true },
+      margin: [12, 10, 12, 10],
+      filename: fn,
+      image: { type: 'jpeg', quality: 0.96 },
+      html2canvas: { scale: 2, useCORS: true, letterRendering: true },
       jsPDF: { unit: 'mm', format: 'a4', orientation: land ? 'landscape' : 'portrait' },
-      pagebreak: { mode: ['css', 'legacy'], avoid: ['tr'] }
+      pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.nobreak'] }
     }).from(d).save();
     okp = 1;
   } finally {
     d.remove();
     hideBusy();
   }
-  if (okp) toast('สร้างรายงานแล้ว');
+  if (okp) toast('ดาวน์โหลดรายงานแล้ว');
 }
 
+/* PDF รายการประชุมรายครั้ง */
 const mPDF = safe(async id => {
   const m = S.meetings.find(x => x.id === id);
+  if (!m) return toast('ไม่พบข้อมูลการประชุม', 1);
+  const pres = (m.attendance || []).filter(a => a.present);
+  const abs = (m.attendance || []).filter(a => !a.present);
   await makePDF(`
-    <h2>รายงานสรุปผลการประชุม</h2>
-    <h3 style="font-weight:400">${esc(nm(S.types, m.typeId))}${m.title ? ' : ' + esc(m.title) : ''}</h3>
-    <table style="margin:10px 0">
-      <tr><td width="22%"><b>วันที่ประชุม</b></td><td>${thDate(m.date)}</td></tr>
-      <tr><td><b>พื้นที่</b></td><td>${esc(area(m))}</td></tr>
-      <tr><td><b>องค์ประชุมทั้งหมด</b></td><td>${m.total} คน</td></tr>
-      <tr><td><b>เข้าร่วมประชุม</b></td><td>${m.present} คน (ร้อยละ ${pct(m.present, m.total)})</td></tr>
-      <tr><td><b>ไม่เข้าร่วมประชุม</b></td><td>${m.absent} คน</td></tr>
-    </table>
-    <div class="l"><h3>หัวข้อการประชุม</h3></div>
-    ${m.topics.length
-      ? m.topics.map((t, i) => `<div style="margin:6px 0"><b>${i + 1}. ${esc(t.title)}</b><div style="white-space:pre-wrap;padding-left:18px">${esc(t.detail)}</div></div>`).join('')
+    <div class="nobreak">
+      <h2>รายงานสรุปผลการประชุม</h2>
+      <h3 style="font-weight:500;margin:4px 0 12px">${esc(nm(S.types, m.typeId))}${m.title ? ' : ' + esc(m.title) : ''}</h3>
+      <table style="margin:8px 0 14px">
+        <tr><td width="26%"><b>วันที่ประชุม</b></td><td>${thDate(m.date)}</td></tr>
+        <tr><td><b>ระดับ</b></td><td>${meetLevel(m)}</td></tr>
+        <tr><td><b>พื้นที่</b></td><td>${esc(area(m))}</td></tr>
+        <tr><td><b>องค์ประชุมทั้งหมด</b></td><td>${m.total || 0} คน</td></tr>
+        <tr><td><b>เข้าร่วมประชุม</b></td><td>${m.present || 0} คน (ร้อยละ ${pct(m.present, m.total)})</td></tr>
+        <tr><td><b>ไม่เข้าร่วมประชุม</b></td><td>${m.absent || 0} คน</td></tr>
+      </table>
+    </div>
+    <div class="l nobreak"><h3>หัวข้อการประชุม / มติ</h3></div>
+    ${(m.topics || []).length
+      ? m.topics.map((t, i) => `<div class="nobreak" style="margin:8px 0 10px">
+          <b>${i + 1}. ${esc(t.title || '-')}</b>
+          <div style="white-space:pre-wrap;padding:4px 0 0 18px;line-height:1.55">${esc(t.detail || '-')}</div>
+        </div>`).join('')
       : '<p>-</p>'}
-    <div class="l"><h3 style="margin-top:10px">รายชื่อองค์ประชุม</h3></div>
+    <div class="l"><h3 style="margin-top:12px">รายชื่อองค์ประชุมที่เข้าร่วม (${pres.length} คน)</h3></div>
     <table>
-      <tr><th width="8%">ลำดับ</th><th>ชื่อ-สกุล</th><th>ตำแหน่ง</th><th width="18%">การเข้าร่วม</th></tr>
-      ${m.attendance.map((a, i) => `<tr>
-        <td align="center">${i + 1}</td>
-        <td>${esc(a.name)}</td>
-        <td>${esc(a.position)}</td>
-        <td align="center">${a.present ? 'เข้าร่วม' : 'ไม่เข้าร่วม'}</td>
-      </tr>`).join('')}
+      <tr><th width="8%">ลำดับ</th><th>ชื่อ-สกุล</th><th>ตำแหน่ง</th></tr>
+      ${pres.length
+        ? pres.map((a, i) => `<tr>
+            <td align="center">${i + 1}</td>
+            <td>${esc(a.name)}</td>
+            <td>${esc(a.position || '')}</td>
+          </tr>`).join('')
+        : '<tr><td colspan="3" align="center">-</td></tr>'}
     </table>
-    <div style="margin-top:36px;text-align:right;padding-right:40px">
-      ลงชื่อ ....................................... ผู้บันทึกการประชุม<br>( ....................................... )
-    </div>`, 'สรุปการประชุม_' + m.date + '.pdf');
+    ${abs.length ? `
+      <div class="l"><h3 style="margin-top:14px">รายชื่อที่ไม่เข้าร่วม (${abs.length} คน)</h3></div>
+      <table>
+        <tr><th width="8%">ลำดับ</th><th>ชื่อ-สกุล</th><th>ตำแหน่ง</th></tr>
+        ${abs.map((a, i) => `<tr>
+          <td align="center">${i + 1}</td>
+          <td>${esc(a.name)}</td>
+          <td>${esc(a.position || '')}</td>
+        </tr>`).join('')}
+      </table>` : ''}
+    <div style="margin-top:40px;text-align:right;padding-right:48px" class="nobreak">
+      ลงชื่อ .............................................. ผู้บันทึกการประชุม<br>
+      ( .............................................. )<br>
+      ตำแหน่ง ..............................................
+    </div>
+    ${reportFooter()}
+  `, 'สรุปการประชุม_' + m.date + '.pdf');
 });
 
+/* PDF สรุปรวมตามตัวกรอง */
 const expP = safe(async () => {
   const L = fm(), T = tot(L);
-  if (!L.length) return toast('ไม่มีข้อมูลให้ออกรายงาน', 1);
+  if (!L.length) return toast('ไม่มีข้อมูลให้ออกรายงานตามเงื่อนไขที่เลือก', 1);
+
+  // สรุปตามระดับ
+  const byLv = { 'ตำบล': [], 'อำเภอ': [], 'จังหวัด': [], 'ส่วนกลาง': [] };
+  L.forEach(m => byLv[meetLevel(m)].push(m));
+  const lvRows = Object.keys(byLv).filter(k => byLv[k].length).map(k => {
+    const t = tot(byLv[k]);
+    return `<tr>
+      <td>${k}</td>
+      <td align="center">${t.n}</td>
+      <td align="center">${t.t}</td>
+      <td align="center">${t.p}</td>
+      <td align="center">${t.t - t.p}</td>
+      <td align="center">${pct(t.p, t.t)}</td>
+    </tr>`;
+  }).join('');
+
   await makePDF(`
-    <h2>รายงานสรุปการประชุม ปี ${F.year + 543}</h2>
-    <p style="text-align:center;margin:0">
-      ${F.month ? 'เดือน' + TH[+F.month - 1] + ' ' : ''}
-      ${F.sub ? 'ต.' + esc(nm(S.subdistricts, F.sub)) + ' ' : ''}
-      ${F.dist ? 'อ.' + esc(nm(S.districts, F.dist)) + ' ' : ''}
-      ${F.prov ? 'จ.' + esc(nm(S.provinces, F.prov)) : ''}
-    </p>
-    <p>ประชุมทั้งหมด ${T.n} ครั้ง | องค์ประชุมรวม ${T.t} | เข้าร่วม ${T.p} | ไม่เข้าร่วม ${T.t - T.p} | ร้อยละการเข้าร่วม ${pct(T.p, T.t)}</p>
+    <h2>รายงานสรุปการประชุม</h2>
+    <p style="text-align:center;margin:2px 0 10px;font-size:14px">${esc(filterDesc())}</p>
+    <table style="margin-bottom:12px">
+      <tr>
+        <td><b>จำนวนครั้ง</b><br>${T.n}</td>
+        <td><b>องค์ประชุมรวม</b><br>${T.t}</td>
+        <td><b>เข้าร่วม</b><br>${T.p}</td>
+        <td><b>ไม่เข้าร่วม</b><br>${T.t - T.p}</td>
+        <td><b>ร้อยละเข้าร่วม</b><br>${pct(T.p, T.t)}</td>
+      </tr>
+    </table>
+    <div class="l"><h3>สรุปตามระดับ</h3></div>
+    <table style="margin-bottom:14px">
+      <tr><th>ระดับ</th><th>ครั้ง</th><th>องค์ประชุม</th><th>เข้าร่วม</th><th>ไม่เข้า</th><th>ร้อยละ</th></tr>
+      ${lvRows}
+    </table>
+    <div class="l"><h3>รายการประชุม</h3></div>
     <table>
-      <tr><th>วันที่</th><th>ประเภท</th><th>เรื่อง</th><th>พื้นที่</th><th>องค์ประชุม</th><th>เข้าร่วม</th><th>ไม่เข้า</th><th>ร้อยละ</th></tr>
+      <tr>
+        <th>วันที่</th><th>ระดับ</th><th>ประเภท</th><th>เรื่อง</th><th>พื้นที่</th>
+        <th>องค์ประชุม</th><th>เข้าร่วม</th><th>ไม่เข้า</th><th>ร้อยละ</th>
+      </tr>
       ${L.map(m => `<tr>
         <td>${thDate(m.date)}</td>
+        <td align="center">${meetLevel(m)}</td>
         <td>${esc(nm(S.types, m.typeId))}</td>
         <td>${esc(m.title)}</td>
         <td>${esc(area(m))}</td>
-        <td align="center">${m.total}</td>
-        <td align="center">${m.present}</td>
-        <td align="center">${m.absent}</td>
+        <td align="center">${m.total || 0}</td>
+        <td align="center">${m.present || 0}</td>
+        <td align="center">${m.absent || 0}</td>
         <td align="center">${pct(m.present, m.total)}</td>
       </tr>`).join('')}
-    </table>`, 'รายงานสรุปการประชุม_' + (F.year + 543) + '.pdf', 1);
+    </table>
+    ${reportFooter()}
+  `, 'รายงานสรุปการประชุม_' + (F.year + 543) + '.pdf', 1);
 });
 
+/* Excel หลายชีต */
 const expX = safe(async () => {
-  const L = fm();
-  if (!L.length) return toast('ไม่มีข้อมูลให้ออกรายงาน', 1);
-  const wb = XLSX.utils.book_new();
-  const a = [['วันที่', 'ประเภท', 'เรื่อง', 'จังหวัด', 'อำเภอ', 'ตำบล', 'องค์ประชุม', 'เข้าร่วม', 'ไม่เข้าร่วม', 'ร้อยละ']];
-  const b = [['วันที่', 'ตำบล', 'เรื่อง', 'ชื่อ-สกุล', 'ตำแหน่ง', 'การเข้าร่วม']];
-  const c = [['วันที่', 'ตำบล', 'หัวข้อ', 'รายละเอียด']];
-  L.forEach(m => {
-    a.push([
-      thDate(m.date), nm(S.types, m.typeId), m.title,
-      nm(S.provinces, m.provinceId), nm(S.districts, m.districtId), nm(S.subdistricts, m.subdistrictId),
-      m.total, m.present, m.absent, pct(m.present, m.total)
-    ]);
-    m.attendance.forEach(x => b.push([
-      thDate(m.date), nm(S.subdistricts, m.subdistrictId), m.title,
-      x.name, x.position, x.present ? 'เข้าร่วม' : 'ไม่เข้าร่วม'
-    ]));
-    m.topics.forEach(t => c.push([
-      thDate(m.date), nm(S.subdistricts, m.subdistrictId), t.title, t.detail
-    ]));
-  });
-  [['สรุปการประชุม', a], ['รายชื่อผู้เข้าร่วม', b], ['หัวข้อการประชุม', c]]
-    .forEach(x => XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(x[1]), x[0]));
-  XLSX.writeFile(wb, 'รายงานการประชุม_' + (F.year + 543) + '.xlsx');
+  const L = fm(), T = tot(L);
+  if (!L.length) return toast('ไม่มีข้อมูลให้ออกรายงานตามเงื่อนไขที่เลือก', 1);
+  showBusy('กำลังสร้าง Excel', 'กรุณารอสักครู่...');
+  try {
+    const wb = XLSX.utils.book_new();
+
+    // ชีต 1: สรุป
+    const a = [
+      ['รายงานสรุปการประชุม'],
+      [filterDesc()],
+      ['จำนวนครั้ง', T.n, 'องค์ประชุมรวม', T.t, 'เข้าร่วม', T.p, 'ไม่เข้าร่วม', T.t - T.p, 'ร้อยละ', pct(T.p, T.t)],
+      [],
+      ['วันที่', 'ระดับ', 'ประเภท', 'เรื่อง', 'จังหวัด', 'อำเภอ', 'ตำบล', 'พื้นที่', 'องค์ประชุม', 'เข้าร่วม', 'ไม่เข้าร่วม', 'ร้อยละ']
+    ];
+    L.forEach(m => {
+      a.push([
+        thDate(m.date),
+        meetLevel(m),
+        nm(S.types, m.typeId),
+        m.title || '',
+        nm(S.provinces, m.provinceId),
+        nm(S.districts, m.districtId),
+        nm(S.subdistricts, m.subdistrictId),
+        area(m),
+        m.total || 0,
+        m.present || 0,
+        m.absent || 0,
+        pct(m.present, m.total)
+      ]);
+    });
+
+    // ชีต 2: รายชื่อผู้เข้าร่วม
+    const b = [['วันที่', 'ระดับ', 'พื้นที่', 'เรื่อง', 'ชื่อ-สกุล', 'ตำแหน่ง', 'การเข้าร่วม']];
+    L.forEach(m => {
+      (m.attendance || []).forEach(x => b.push([
+        thDate(m.date),
+        meetLevel(m),
+        area(m),
+        m.title || '',
+        x.name || '',
+        x.position || '',
+        x.present ? 'เข้าร่วม' : 'ไม่เข้าร่วม'
+      ]));
+    });
+
+    // ชีต 3: หัวข้อการประชุม
+    const c = [['วันที่', 'ระดับ', 'พื้นที่', 'เรื่องการประชุม', 'หัวข้อ', 'รายละเอียด / มติ']];
+    L.forEach(m => {
+      (m.topics || []).forEach(t => c.push([
+        thDate(m.date),
+        meetLevel(m),
+        area(m),
+        m.title || '',
+        t.title || '',
+        t.detail || ''
+      ]));
+    });
+
+    // ชีต 4: สรุปรายเดือน
+    const d = [['เดือน', 'จำนวนครั้ง', 'องค์ประชุม', 'เข้าร่วม', 'ไม่เข้าร่วม', 'ร้อยละ']];
+    TH.forEach((name, i) => {
+      const k = String(i + 1).padStart(2, '0');
+      const x = L.filter(m => (m.date || '').slice(5, 7) === k);
+      if (!x.length) return;
+      const t = tot(x);
+      d.push([name, t.n, t.t, t.p, t.t - t.p, pct(t.p, t.t)]);
+    });
+
+    // ชีต 5: สรุปตามระดับ
+    const e = [['ระดับ', 'จำนวนครั้ง', 'องค์ประชุม', 'เข้าร่วม', 'ไม่เข้าร่วม', 'ร้อยละ']];
+    ['ตำบล', 'อำเภอ', 'จังหวัด', 'ส่วนกลาง'].forEach(lv => {
+      const x = L.filter(m => meetLevel(m) === lv);
+      if (!x.length) return;
+      const t = tot(x);
+      e.push([lv, t.n, t.t, t.p, t.t - t.p, pct(t.p, t.t)]);
+    });
+
+    [
+      ['สรุปการประชุม', a],
+      ['รายชื่อผู้เข้าร่วม', b],
+      ['หัวข้อการประชุม', c],
+      ['สรุปรายเดือน', d],
+      ['สรุปตามระดับ', e]
+    ].forEach(([name, data]) => {
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), name);
+    });
+
+    const fn = 'รายงานการประชุม_' + (F.year + 543) +
+      (F.month ? '_' + F.month : '') + '.xlsx';
+    XLSX.writeFile(wb, fn);
+    toast('ดาวน์โหลด Excel แล้ว');
+  } finally {
+    hideBusy();
+  }
 });
