@@ -523,25 +523,22 @@ td.n, th.n { text-align: right; }
 }
 #toast.e { background: var(--bad); }
 
-/* PDF report (hidden) */
+/* PDF report */
 .rep {
-  color: #000;
-  background: #fff;
+  color: #000 !important;
+  background: #fff !important;
   font-size: 14px;
   line-height: 1.5;
-  position: fixed;
-  left: -10000px;
-  top: 0;
 }
 .rep table { width: 100%; border-collapse: collapse; }
 .rep th, .rep td {
   border: 1px solid #333;
   padding: 4px 6px;
   font-size: 13px;
-  background: #fff;
-  color: #000;
+  background: #fff !important;
+  color: #000 !important;
 }
-.rep h2, .rep h3 { text-align: center; }
+.rep h2, .rep h3 { text-align: center; color: #000 !important; }
 .rep .l h3 { text-align: left; }
 
 /* SweetAlert2 overrides */
