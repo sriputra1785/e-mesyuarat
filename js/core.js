@@ -79,10 +79,13 @@ const un = r => {
   if (r.error) {
     const m = r.error.message || '';
     throw new Error(
-      /row-level security|permission denied/i.test(m) ? 'ไม่มีสิทธิ์ดำเนินการ' :
+      /row-level security|permission denied|new row violates/i.test(m) ? 'ไม่มีสิทธิ์ดำเนินการ (ตรวจ RLS/สิทธิ์ผู้ใช้)' :
       /duplicate key/i.test(m) ? 'ข้อมูลซ้ำ' :
       /foreign key/i.test(m) ? 'ยังมีข้อมูลที่เกี่ยวข้องอยู่ จึงลบไม่ได้' :
-      /invalid login/i.test(m) ? 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' : m
+      /invalid login/i.test(m) ? 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' :
+      /ไม่พบตำบล/i.test(m) ? 'ฐานข้อมูลยังบังคับระดับตำบล — รัน SQL แก้ตาราง members ใน Supabase ก่อน' :
+      /null value.*subdistrict/i.test(m) ? 'คอลัมน์ตำบลยังห้ามว่าง — รัน ALTER DROP NOT NULL' :
+      m
     );
   }
   return r.data;
